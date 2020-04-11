@@ -1,6 +1,7 @@
 const express = require('express');
 const config = require('config')
 const app = express();
+const cors = require('cors');
 const connectDB = require('./config/db');
 const flash = require('connect-flash');
 const session = require('express-session');
@@ -13,6 +14,7 @@ require('./config/passport')(passport);
 
 // Initialize express session middleware
 app.use(express.json({extended: false}));
+app.use(cors())
 app.use(session({
     secret: config.get('HIDDEN_SECRET'),
     resave: true,
@@ -41,8 +43,10 @@ connectDB();
 // Routes initialized
 
 const User = require('./Routes/user');
+const Pub = require('./Routes/pubs');
 
-app.use('/User', User)
+app.use('/User', User);
+app.use('/pubs', Pub);
 
 
 // Start server on port

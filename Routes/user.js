@@ -62,21 +62,7 @@ router.route('/register')
         catch(err){
             res.status(500).json(err + 'Error')
         }
-
-
-        // User.register( {usernameField: 'email'}, email, firstname, lastname, password, function(err, user){
-        //     if(err){
-        //         console.log(err);
-        //         res.status(400).json(err + 'error')
-        //     }
-        //     else{
-        //         passport.authenticate('local')(req, res, function(){
-        //             res.json(user)
-        //         })
-        //     }
-        // })
        
-
     })
 
     .get( async (req, res) => {
@@ -90,22 +76,22 @@ router.route('/register')
     })
 
     // Login Route
-    router.route('/login')
+router.route('/login')
 
-        .post( (req, res, next) => {
-            passport.authenticate('local', {
-                successRedirect: '/epub',
-                failureRedirect: '/User/login',
-                failureFlash: true
-            })(req, res, next);
+    .post( (req, res, next) => {
+        passport.authenticate('local', {
+            successRedirect: '/epub',
+            failureRedirect: '/User/login',
+            failureFlash: true
+        })(req, res, next);
 
 
 
-            // passport.authenticate('local', {
-            //     successRedirect: d,
-            //     failureRedirect: '/',
-            //     failureMessage: true
-            // })(req, res, next)
-        })
+        // passport.authenticate('local', {
+        //     successRedirect: d,
+        //     failureRedirect: '/',
+        //     failureMessage: true
+        // })(req, res, next)
+})
 
-    module.exports = router;
+module.exports = router;
