@@ -54,7 +54,7 @@ router.route('/register')
             user.password = await bcrypt.hash(password, salt);
 
             const newUser = await user.save();
-            req.flash('success_msg', 'You have successfully signed up');
+            // req.flash('success_msg', 'You have successfully signed up');
             res.status(200).json(newUser);
             // res.redirect('/User/login')
 
@@ -85,13 +85,6 @@ router.route('/login')
             failureFlash: true
         })(req, res, next);
 
-
-
-        // passport.authenticate('local', {
-        //     successRedirect: d,
-        //     failureRedirect: '/',
-        //     failureMessage: true
-        // })(req, res, next)
-})
+});
 
 module.exports = router;
