@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const pubSchema = new Schema({
-    name: {
+const barSchema = new Schema({
+    barName: {
         type: String,
         required: true,
         trim: true
@@ -11,7 +11,7 @@ const pubSchema = new Schema({
     address: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
     },
 
     location: {
@@ -23,15 +23,21 @@ const pubSchema = new Schema({
     picture: {
         type: String,
         required: true,
+        trim: true
     },
-    pubId: {
+
+    barId: {
         type: String,
         required: true,
-        trim: true,
-        unique: true
+        trim: true
+    },
+
+    date: {
+        type: Date,
+        default: Date.now
     }
 });
 
-const Pub = mongoose.model('Pub', pubSchema);
+const Bar = mongoose.model('Bar', barSchema);
 
-module.exports = Pub;
+module.exports = Bar;

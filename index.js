@@ -43,10 +43,11 @@ connectDB();
 // Routes initialized
 
 const User = require('./Routes/user');
-const Pub = require('./Routes/pubs');
+const Bar = require('./Routes/bar');
+
 
 app.use('/User', User);
-app.use('/pubs', Pub);
+app.use('/Bar', Bar);
 
 
 // Start server on port

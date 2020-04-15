@@ -55,7 +55,7 @@ router.route('/register')
 
             const newUser = await user.save();
             // req.flash('success_msg', 'You have successfully signed up');
-            res.status(200).json(newUser);
+            res.json(newUser);
             // res.redirect('/User/login')
 
         }
