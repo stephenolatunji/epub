@@ -59,7 +59,11 @@ router.route('/')
 
                 await bar.save();
 
-                const user = new Token({bar: bar._id});
+                const user = new Token({
+                    bar: bar._id,
+                    firstName,
+                    lastName
+                });
 
                 await user.save();
 

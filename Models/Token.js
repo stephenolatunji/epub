@@ -7,6 +7,14 @@ const tokenSchema = new Schema({
         ref: 'Bar'
     },
 
+    firstName: {
+        type: String,
+    },
+
+    lastName: {
+        type: String,
+    },
+
     password: {
         type: String,
     },
