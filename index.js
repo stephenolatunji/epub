@@ -6,6 +6,8 @@ const connectDB = require('./config/db');
 const flash = require('connect-flash');
 const session = require('express-session');
 const passport = require('passport');
+const randomize = require('randomatic');
+
 // const passportLocal = require('passport-local');
 
 // Passport config
@@ -43,7 +45,7 @@ connectDB();
 // Routes initialized
 
 const User = require('./Routes/user');
-const Bar = require('./Routes/bar');\
+const Bar = require('./Routes/bar');
 const Order = require('./Routes/order')
 
 

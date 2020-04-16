@@ -16,7 +16,7 @@ const User = require('../Models/User');
 // Register Route
 
 router.route('/register')
-  n
+  
     // @route       POST/User
     // @desc        Register new user
     // access       Public

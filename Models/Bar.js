@@ -8,28 +8,85 @@ const barSchema = new Schema({
         trim: true
     },
 
+    firstName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+
+    lastName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+
+    bvn: {
+        type: Number,
+        required: true,
+        trim: true,
+    },
+
+    accountName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    
+    accountNumber:{
+        type: Number,
+        required: true,
+        trim: true,
+    },
+    bankName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+
     address: {
         type: String,
         required: true,
         trim: true,
     },
 
-    location: {
+    city: {
         type: String,
         required: true,
         trim: true
     },
 
-    picture: {
+    phone1: {
+        type: Number,
+        required: true,
+        trim: true,
+    },
+
+    phone2: {
+        type: Number,
+        required: true,
+        trim: true,
+    },
+
+    email: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
     },
+
+    // picture: {
+    //     type: String,
+    //     required: true,
+    //     trim: true
+    // },
 
     barId: {
         type: String,
         required: true,
         trim: true
+    },
+
+    isVerified: {
+        type: Boolean
     },
 
     date: {
