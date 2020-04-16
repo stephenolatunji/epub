@@ -20,7 +20,7 @@ router.route('/')
             check('barName', 'Enter bar name').not().isEmpty(),
             check('city', 'Please select a city').not().isEmpty(),
             check('barId', 'Enter bar ID').not().isEmpty(),
-            check('bvn', 'Please enter BVN').not()
+            check('bvn', 'Please enter BVN').not().isEmpty()
         ], async (req, res) => {
 
             const errors = validationResult(req)
@@ -45,14 +45,14 @@ router.route('/')
 
         try{
 
-            let bar = await Bar.findOne({ barId })
+            // let bar = await Bar.findOne({ barId })
 
             
-            if(bar){
-                return res.status(400).json({ message: 'bar already exists'})
-            }
+            // if(bar){
+            //     return res.status(400).json({ message: 'bar already exists'})
+            // }
             
-                bar = new Bar({
+            let bar = new Bar({
                 barName,
                 address,
                 city,
@@ -97,7 +97,7 @@ router.route('/')
             res.status(200).send('A verification email has been sent to ' + bar.email + '.');
         });
     })
-    
+
 
     // @route       GET/
     // @desc        Fetch all bars
