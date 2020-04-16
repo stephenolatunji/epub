@@ -80,15 +80,16 @@ router.route('/')
 
                 smtpTransport.sendMail(mailOptions, function (err) {
                     if (err) {
-                        return res.status(500).send({msg: err.message});
+                        return res.status(500).send({message: err.message, success: false});
                     }
                     res.status(200).json({
-                        message: 'A verification email has been sent to ' + bar.email + '.'
+                        message: 'A verification email has been sent to ' + bar.email + '.',
+                        success: true
                     });
                 });
 
             } catch (err) {
-                res.status(500).json(err + 'Error')
+                res.status(500).json({message: err + 'Error', success: false})
             }
         })
 
