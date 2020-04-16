@@ -57,6 +57,7 @@ router.route('/register')
                     res.status(400).json({errors: errors.array()});
                 }
 
+                const { barId, password } = req.body;
                 try{
 
                     let owner = await Token.findOne({ barId });
