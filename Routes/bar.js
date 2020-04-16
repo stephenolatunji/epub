@@ -19,7 +19,6 @@ router.route('/')
         [
             check('barName', 'Enter bar name').not().isEmpty(),
             check('city', 'Please select a city').not().isEmpty(),
-            check('barId', 'Enter bar ID').not().isEmpty(),
             check('bvn', 'Please enter BVN').not().isEmpty()
         ], async (req, res) => {
 
