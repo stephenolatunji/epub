@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { check, validationResult } = require('express-validator');
+const {check, validationResult} = require('express-validator');
 const nodemailer = require('nodemailer');
 const randomize = require('randomatic');
 
@@ -21,99 +21,92 @@ router.route('/')
             check('city', 'Please select a city').not().isEmpty(),
             check('bvn', 'Please enter BVN').not().isEmpty()
         ], async (req, res) => {
-
-            const errors = validationResult(req)
-            if(!errors.isEmpty()){
-                return res.status(400).json({ errors: errors.array()})
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({errors: errors.array()})
             }
 
-        const { 
-                barName, 
-                firstName, 
-                lastName, 
-                bvn, 
-                accountName, 
+            const {
+                barName,
+                firstName,
+                lastName,
+                bvn,
+                accountName,
                 accountNumber,
                 bankName,
-                address, 
-                city,
-                phone1,
-                phone2,
-                email
-                } = req.body;
-
-        try{
-
-            // let bar = await Bar.findOne({ barId })
-
-            
-            // if(bar){
-            //     return res.status(400).json({ message: 'bar already exists'})
-            // }
-            
-            let bar = new Bar({
-                barName,
                 address,
                 city,
-                firstName, 
-                lastName, 
-                bvn, 
-                accountName, 
-                accountNumber,
-                bankName,
                 phone1,
                 phone2,
                 email
-            })
+            } = req.body;
 
-            const newBar = await bar.save();
-            res.json(newBar);
-        }
-        catch(err){
-            res.status(500).json(err + 'Error')
-        }
+            try {
+                const bar = new Bar({
+                    barName,
+                    address,
+                    city,
+                    firstName,
+                    lastName,
+                    bvn,
+                    accountName,
+                    accountNumber,
+                    bankName,
+                    phone1,
+                    phone2,
+                    email
+                });
 
-        const barId = new Token({ bar: bar_id, barId: randomize('Aa', 5, {chars: 'InternationalBreweries'})});
-        // randomize.isCrypto;
+                await bar.save();
 
-        const smtpTransport = nodemailer.createTransport({
-            service: "gmail",
-            host: "smtp.gmail.com",
-            auth: {
-                user: "stevemckorr@gmail.com",
-                pass: "randy_korr1"
+                const user = new Token({bar: bar._id});
+
+                await user.save();
+
+                const smtpTransport = nodemailer.createTransport({
+                    service: "gmail",
+                    host: "smtp.gmail.com",
+                    auth: {
+                        user: "stevemckorr@gmail.com",
+                        pass: "randy_korr1"
+                    }
+                });
+
+                const mailOptions = {
+                    to: bar.email,
+                    subject: 'Your Bar ID',
+                    text: 'BarId' + bar._id
+                };
+
+                smtpTransport.sendMail(mailOptions, function (err) {
+                    if (err) {
+                        return res.status(500).send({msg: err.message});
+                    }
+                    res.status(200).json({
+                        message: 'A verification email has been sent to ' + bar.email + '.'
+                    });
+                });
+
+            } catch (err) {
+                res.status(500).json(err + 'Error')
             }
-        });
-
-        const mailOptions={
-            to : bar.email,
-            subject : 'Your Bar ID',
-            text : 'BarId' + barId
-        }
-
-        smtpTransport.sendMail(mailOptions, function (err) {
-            if (err) { return res.status(500).send({ msg: err.message }); }
-            res.status(200).send('A verification email has been sent to ' + bar.email + '.');
-        });
-    })
+        })
 
 
     // @route       GET/
     // @desc        Fetch all bars
     // access       Public
 
-    .get( async (req, res) => {
+    .get(async (req, res) => {
 
-        try{
+        try {
 
-            const bar = await Bar.find().populate('bar', [])
+            const bar = await Bar.find().populate('bar', []);
             res.json(bar);
-        }
-        catch(err){
+        } catch (err) {
             res.status(500).json(err + 'Error')
         }
     });
-
 
 
 router.route('/:_id')
@@ -121,13 +114,12 @@ router.route('/:_id')
     // @desc         Fetch a single bar
     // access       Public
 
-    .get( async (req, res) => {
+    .get(async (req, res) => {
 
-        try{
-        const bar = await Bar.findById({_id: req.params._id});
-        res.json(bar);
-        }
-        catch(err){
+        try {
+            const bar = await Bar.findById({_id: req.params._id});
+            res.json(bar);
+        } catch (err) {
             res.status(500).json(err + 'Error')
         }
     })
@@ -137,19 +129,18 @@ router.route('/:_id')
     // @desc        Updates a specific bar
     // access       Public
 
-    .patch( async (req, res) => {
+    .patch(async (req, res) => {
 
-        try{
+        try {
 
             const bar = await Bar.update(
                 {_id: req.params._id},
                 {$set: req.body}
-            )
+            );
             res.json(bar)
-        }
-        catch(err){
+        } catch (err) {
             res.status(500).json(err + 'Error')
         }
     });
 
-    module.exports = router;
+module.exports = router;
