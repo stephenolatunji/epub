@@ -21,26 +21,21 @@ router.route('/register')
 
             try{
 
-                let owner = await Token.find({ barId });
-                if(barId){
+                const {barId, password} = req.body;
 
-                    res.status(400).json({ message: ' Bar ID already exists'})
+                const owner = await Token.find({ bar: barId });
+                if(!owner){
+                    res.status(400).json({ message: 'User does not exist', success: false})
                 }
-
-                owner = new Token({
-
-                    barId: req.body.barId,
-                    password: req.body.password
-                })
 
                 const salt = await bcrypt.genSalt(10);
                 owner.password = await bcrypt.hash(password, salt);
 
-                const newOwner = await owner.save();
-                res.json({newOwner});
+                await owner.save();
+                res.json({owner, success: true});
             }
             catch(err){
-                res.status(500).json(err + 'Error')
+                res.status(500).json({message: err + 'Error', success: false})
             }
         
     });
