@@ -47,13 +47,13 @@ connectDB();
 const User = require('./Routes/user');
 const Bar = require('./Routes/bar');
 const Order = require('./Routes/order');
-// const BarOwner = require('./Routes/bar');
+const BarOwner = require('./Routes/barConfirmation');
 
 
 app.use('/User', User);
 app.use('/Bar', Bar);
 app.use('/Order', Order);
-// app.use('/BarOwner', BarOwner);
+app.use('/BarOwner', BarOwner);
 
 
 // Start server on port

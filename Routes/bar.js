@@ -73,7 +73,7 @@ router.route('/')
             res.status(500).json(err + 'Error')
         }
 
-        const barId = new Token({ bar: bar_id, barId:randomize('Aa', 5, {chars: 'InternationalBreweries'})});
+        const barId = new Token({ bar: bar_id, barId: randomize('Aa', 5, {chars: 'InternationalBreweries'})});
         // randomize.isCrypto;
 
         const smtpTransport = nodemailer.createTransport({
@@ -106,7 +106,7 @@ router.route('/')
 
         try{
 
-            const bar = await Bar.find()
+            const bar = await Bar.find().populate('bar', [])
             res.json(bar);
         }
         catch(err){
