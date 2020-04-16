@@ -23,7 +23,7 @@ router.route('/register')
 
                 const {barId, password} = req.body;
 
-                const owner = await Token.find({ bar: barId });
+                const owner = await Token.findOne({ bar: barId }).populate('bar');
                 if(!owner){
                     res.status(400).json({ message: 'User does not exist', success: false})
                 }
@@ -32,7 +32,10 @@ router.route('/register')
                 owner.password = await bcrypt.hash(password, salt);
 
                 await owner.save();
-                res.json({owner, success: true});
+                const ownerObj = owner.toJSON();
+                delete ownerObj.password;
+
+                res.json({owner: ownerObj, success: true});
             }
             catch(err){
                 res.status(500).json({message: err + 'Error', success: false})
