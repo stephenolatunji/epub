@@ -3,20 +3,25 @@ const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
     user: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+        type: String,
+        trim: true
     },
-    pub: [
+    
+    bar: [
         {
-            name:{
+            barName:{
                 type: Schema.Types.ObjectId,
                 ref: 'Pubs'
             },
             amount:{
                 type: Number,
                 required: true
+            },
+
+            quantity: {
+                type: Number
             }
-        },
+        }
 
     ],
 
@@ -24,6 +29,11 @@ const orderSchema = new Schema({
         type: Number,
         reqiured: true,
         trim: true
+    },
+
+    date: {
+        type: Date,
+        default: Date.now
     }
 });
 

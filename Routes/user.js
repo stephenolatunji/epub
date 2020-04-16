@@ -16,7 +16,7 @@ const User = require('../Models/User');
 // Register Route
 
 router.route('/register')
-  
+  n
     // @route       POST/User
     // @desc        Register new user
     // access       Public
@@ -80,7 +80,7 @@ router.route('/login')
 
     .post( (req, res, next) => {
         passport.authenticate('local', {
-            successRedirect: '/epub',
+            successRedirect: '/order',
             failureRedirect: '/User/login',
             failureFlash: true
         })(req, res, next);

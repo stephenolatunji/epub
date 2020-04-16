@@ -43,11 +43,13 @@ connectDB();
 // Routes initialized
 
 const User = require('./Routes/user');
-const Bar = require('./Routes/bar');
+const Bar = require('./Routes/bar');\
+const Order = require('./Routes/order')
 
 
 app.use('/User', User);
 app.use('/Bar', Bar);
+app.use('/Order', Order)
 
 
 // Start server on port
