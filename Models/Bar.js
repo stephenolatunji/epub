@@ -73,22 +73,6 @@ const barSchema = new Schema({
         trim: true,
     },
 
-    // picture: {
-    //     type: String,
-    //     required: true,
-    //     trim: true
-    // },
-
-    barId: {
-        type: String,
-        required: true,
-        trim: true
-    },
-
-    isVerified: {
-        type: Boolean
-    },
-
     date: {
         type: Date,
         default: Date.now
