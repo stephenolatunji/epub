@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { check, validationResult } = require('express-validator');
+const {check, validationResult} = require('express-validator');
 const bcrypt = require('bcryptjs');
 
 const Token = require('../Models/Token');
@@ -8,72 +8,68 @@ const Bar = require('../Models/Bar');
 
 router.route('/register')
 
-    .post( 
+    .post(
         [
             check('barId', 'Enter Bar ID').not().isEmpty(),
-            check('password', 'Password must be six or more characters').isLength({ min: 6 })
+            check('password', 'Password must be six or more characters').isLength({min: 6})
         ], async (req, res) => {
 
             const errors = validationResult(req);
-            if(!errors.isEmpty()){
+            if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()})
             }
 
-            try{
+            try {
 
-                let owner = await Token.find({ barId });
-                if(barId){
+                const {barId, password} = req.body;
 
-                    res.status(400).json({ message: ' Owner already exists'})
+                const owner = await Token.findOne({bar: barId}).populate('bar');
+                if (!owner) {
+                    return res.status(400).json({message: 'User does not exist', success: false})
                 }
-
-                owner = new Token({
-
-                    barId: req.body.barId,
-                    password: req.body.password
-                })
 
                 const salt = await bcrypt.genSalt(10);
                 owner.password = await bcrypt.hash(password, salt);
 
-                const newOwner = await owner.save();
-                res.json({newOwner});
+                await owner.save();
+                const ownerObj = owner.toJSON();
+                delete ownerObj.password;
+
+                res.json({owner: ownerObj, success: true});
+            } catch (err) {
+                res.status(500).json({message: err + 'Error', success: false})
             }
-            catch(err){
-                res.status(500).json(err + 'Error')
+
+        });
+
+router.route('/login')
+    .post(
+        [
+            check('barId', 'Enter Bar ID').not().isEmpty(),
+            check('password', 'Please enter a password with six or more characters').isLength({min: 6})
+        ], async (req, res) => {
+
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                res.status(400).json({errors: errors.array()});
             }
-        
-    });
 
-    router.route('/login')
-        .post( 
-            [
-                check('barId', 'Enter Bar ID').not().isEmpty(),
-                check('password', 'Please enter a password with six or more characters').isLength({ min: 6})
-            ], async (req, res) => {
+            const {barId, password} = req.body;
+            try {
 
-                const errors = validationResult(req);
-                if(!error.isEmpty()){
-                    res.status(400).json({errors: errors.array()});
+                let owner = await Token.findOne({bar: barId}).populate('bar');
+                if (!owner) {
+                    return res.status(400).json({message: 'Invalid Credentials', success: false});
                 }
+                const isMatch = await bcrypt.compare(password, owner.password);
 
-                const { barId, password } = req.body;
-                try{
-
-                    let owner = await Token.findOne({ barId });
-                    if(!owner){
-                        res.status(400).json({ msg: 'Invalid Credential'});
-                    }
-                    const isMatch = await bcrypt.compare(password, owner.password);
-                    
-                    if(!isMatch){
-                        res.status(400).json({msg: 'Invalid password'})
-                        res.json(owner)
-                    }
+                if (!isMatch) {
+                    return res.status(400).json({message: 'Invalid password', success: false});
                 }
-                catch(err){
-                    res.status(500).json(err + 'Error')
-                }
-            })
+                return res.json({owner, success: true})
+            } catch (err) {
+                res.status(500).json({message: err + 'Error', success: false})
+            }
+        });
 
-    module.exports = router;
+module.exports = router;

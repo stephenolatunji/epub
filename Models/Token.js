@@ -7,21 +7,23 @@ const tokenSchema = new Schema({
         ref: 'Bar'
     },
 
-    barId: {
+    firstName: {
         type: String,
-        required: true
+    },
+
+    lastName: {
+        type: String,
     },
 
     password: {
         type: String,
-        required: true
     },
 
     date: {
         type: Date,
         default: Date.now
     }
-})
+});
 
 const Token = mongoose.model('Token', tokenSchema);
 
