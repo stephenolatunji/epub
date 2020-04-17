@@ -68,22 +68,21 @@ router.route('/')
 
                 await user.save();
 
-                // const smtpTransport = nodemailer.createTransport({
-                //     service: "IMAP",
-                //     host: config.get('SMTP_HOST') ,
-                //     auth: {
-                //         api_key: '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'
-                //         user: config.get('SMTP_USER') ,
-                //         pass: config.get('SMTP_PASSWORD')
-                //     }
-                // }));
+                const smtpTransport = nodemailer.createTransport({
+                    service: "IMAP",
+                    host: config.get('SMTP_HOST') ,
+                    auth: {
+                        user: config.get('SMTP_USER') ,
+                        pass: config.get('SMTP_PASSWORD')
+                    }
+                });
 
                 // });
-                const smtpTransport = nodemailer.createTransport(sendGridTransport({
-                    auth: {
-                        api_key: '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'
-                    }
-                }));
+                // const smtpTransport = nodemailer.createTransport(sendGridTransport({
+                //     auth: {
+                //         api_key: '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'
+                //     }
+                // }));
 
                 const mailOptions = {
                     to: bar.email,
