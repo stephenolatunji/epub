@@ -8,6 +8,11 @@ const barSchema = new Schema({
         trim: true
     },
 
+    image: {
+        type: String,
+        required: true
+    },
+
     firstName: {
         type: String,
         required: true,
