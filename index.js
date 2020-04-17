@@ -16,7 +16,7 @@ require('./config/passport')(passport);
 
 // Initialize express session middleware
 app.use(express.json({extended: false}));
-app.use(cors())
+app.use(cors());
 app.use(session({
     secret: config.get('HIDDEN_SECRET'),
     resave: true,
