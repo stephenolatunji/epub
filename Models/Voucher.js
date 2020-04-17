@@ -22,7 +22,7 @@ const voucherSchema = new Schema({
         required: true
     },
     total: {
-        total: Number,
+        type: Number,
         required: true
     }
 });

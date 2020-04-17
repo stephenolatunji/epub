@@ -22,7 +22,11 @@ const orderSchema = new Schema({
             required: true,
             ref: 'Voucher'
         }
-    ]
+    ],
+    total: {
+        type: Number,
+        required: true
+    }
 });
 
 const Order = mongoose.model('Order', orderSchema);
