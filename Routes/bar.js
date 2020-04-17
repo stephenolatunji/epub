@@ -3,6 +3,28 @@ const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const nodemailer = require('nodemailer');
 require('dotenv/config');
+const config = require('config');
+const multer = require("multer");
+const cloudinary = require("cloudinary");
+const cloudinaryStorage = require("multer-storage-cloudinary");
+
+
+
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_KEY,
+    api_secret: process.env.CLOUDNARY_SECRET
+    });
+    const storage = cloudinaryStorage({
+    cloudinary: cloudinary,
+    folder: "BAR",
+    allowedFormats: ["jpg", "png", "jpeg"],
+    transformation: [{ width: 400, height: 400, crop: "limit" }]
+    });
+
+    const parser = multer({ storage: storage });
+
 
 const Bar = require('../Models/Bar');
 const Token = require('../Models/Token');
@@ -20,11 +42,16 @@ router.route('/')
             check('barName', 'Enter bar name').not().isEmpty(),
             check('city', 'Please select a city').not().isEmpty(),
             check('bvn', 'Please enter BVN').not().isEmpty()
-        ], async (req, res) => {
+        ], parser.single('image'), async (req, res) => {
+
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()})
             }
+
+            const image = {};
+            image.url = req.file.url;
+            image.id = req.file.public_id;
 
             const {
                 barName,
@@ -54,7 +81,8 @@ router.route('/')
                     bankName,
                     phone1,
                     phone2,
-                    email
+                    email,
+                    image
                 });
 
                 await bar.save();
