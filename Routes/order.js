@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { ensureAuthenticated } = require('../middleware/auth');
+const auth = require('../middleware/oauth');
 
 
 const Order = require('../Models/Order');
@@ -9,7 +9,12 @@ const Bar = require('../Models/Bar');
 
 router.route('/')
 
-    .post( ensureAuthenticated, async (req, res) => {
+    
+    // @route       POST/User
+    // @desc        Make new order
+    // access       Private
+
+    .post( auth, async (req, res) => {
 
         
         try{
@@ -31,7 +36,7 @@ router.route('/')
 
     })
 
-    .get(ensureAuthenticated, async (req, res) => {
+    .get( auth, async (req, res) => {
          
         try{
 

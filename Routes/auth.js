@@ -4,11 +4,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const { check, validationResult } = require('express-validator');
+const auth = require('../middleware/oauth');
+
 
 
 const User = require('../Models/User');
-
-// Register Route
 
 router.route('/')
   
@@ -18,8 +18,6 @@ router.route('/')
 
     .post( 
         [
-        check('firstname', 'Enter firstname').not().isEmpty(),
-        check('lastname', 'Enter lastname').not().isEmpty(),
         check('password', 'Please enter a password with six or more character').isLength({ min: 6 }),
         check('email', 'Enter a valid email').isEmail()
         ], async (req, res) => {
@@ -29,27 +27,23 @@ router.route('/')
             res.status(400).json({errors: errors.array()});
 
         }
-        const { firstname, lastname, email, password } =  req.body;
+
+        const { email, password } = req.body;
 
         try{
 
             let user = await User.findOne({ email });
-            if(user){
-                return res.status(400).json({message: 'User already exists'})
+
+            if(!user){
+                return res.status(400).json({message: 'Invalid Credentials'});
             }
 
-            user = new User({
-                firstname,
-                lastname,
-                email,
-                password
-            })
+            const isMatch = await bcrypt.compare(password, user.password);
 
-            const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(password, salt);
+            if(!isMatch){
+                return res.status(400).json({message: 'Invalid Credentials'});
+            }
 
-            await user.save();
-            
             const payload = {
                 user: {
                     id: user.id
@@ -62,23 +56,26 @@ router.route('/')
                 if(err) throw err;
                 res.json({ token });
             });
+
         }
         catch(err){
-            res.status(500).json(err + 'Error')
+            console.error(err.message);
+            res.status(500).send('Server Error')
         }
-       
     })
 
-    .get( async (req, res) => {
+    // @route       GET/User
+    // @desc        Fetch logged in users
+    // access       Private
+
+    .get( auth, async (req, res) => {
         try{
-            const user = await User.find();
+            const user = await User.findById(req.user.id).select('-password');
             res.json(user)
         }
         catch(err){
             res.status(500).json(err + 'Error')
         }
-    });
-
-
-
-module.exports = router;
+    })
+    
+    module.exports = router;
