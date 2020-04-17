@@ -71,8 +71,8 @@ router.route('/')
                     service: "gmail",
                     host: "smtp.gmail.com",
                     auth: {
-                        user: "stevemckorr@gmail.com",
-                        pass: "randy_korr1"
+                        user: "addeufemy@gmail.com",
+                        pass: "P1SSWOR4!"
                     }
                 });
 
