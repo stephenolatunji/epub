@@ -79,6 +79,34 @@ router.route('/')
         }
     });
 
+router.route('/login').post(async(req, res) => {
+    const {email, password} = req;
+
+    const user = await User.findOne({email});
+
+    if(!user){
+        return res.status(404).json({success: false, message: 'User not found'})
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if(!isMatch){
+        return res.status(401).json({success: false, message: 'Invalid details'})
+    }
+
+    const payload = {
+        user: {
+            id: user.id
+        }
+    };
+
+    jwt.sign(payload, config.get('jwtSecret'), {
+        expiresIn: 3600
+    }, (err, token) => {
+        if(err) throw err;
+        res.json({ token, user, success: true });
+    });
+});
 
 
 module.exports = router;
