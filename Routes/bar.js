@@ -9,21 +9,19 @@ const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
 
 
-
-
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
     api_key: process.env.CLOUDINARY_KEY,
     api_secret: process.env.CLOUDNARY_SECRET
-    });
-    const storage = cloudinaryStorage({
+});
+const storage = cloudinaryStorage({
     cloudinary: cloudinary,
     folder: "BAR",
     allowedFormats: ["jpg", "png", "jpeg"],
-    transformation: [{ width: 400, height: 400, crop: "limit" }]
-    });
+    transformation: [{width: 400, height: 400, crop: "limit"}]
+});
 
-    const parser = multer({ storage: storage });
+const parser = multer({storage: storage});
 
 
 const Bar = require('../Models/Bar');
@@ -38,16 +36,15 @@ router.route('/')
     // access       Public
 
     .post(
-        [
-            check('barName', 'Enter bar name').not().isEmpty(),
-            check('city', 'Please select a city').not().isEmpty(),
-            check('bvn', 'Please enter BVN').not().isEmpty()
-        ], parser.single('image'), async (req, res) => {
+        parser.single('image'),
+        async (req, res) => {
 
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()})
             }
+
+            console.log(req.body);
 
             const image = {};
             image.url = req.file.url;
@@ -82,7 +79,7 @@ router.route('/')
                     phone1,
                     phone2,
                     email,
-                    image
+                    image: image.url
                 });
 
                 await bar.save();
