@@ -1,12 +1,13 @@
 const express = require('express');
-const config = require('config')
+require('dotenv/config');
+const config = require('config');
 const app = express();
 const cors = require('cors');
 const connectDB = require('./config/db');
 const flash = require('connect-flash');
 const session = require('express-session');
 const passport = require('passport');
-const randomize = require('randomatic');
+
 
 // const passportLocal = require('passport-local');
 

@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const nodemailer = require('nodemailer');
-const sendGridTransport = require('nodemailer-sendgrid-transport');
+require('dotenv/config');
 const config = require('config');
+
 
 const Bar = require('../Models/Bar');
 const Token = require('../Models/Token');
@@ -70,10 +71,10 @@ router.route('/')
 
                 const smtpTransport = nodemailer.createTransport({
                     service: "IMAP",
-                    host: config.get('SMTP_HOST') ,
+                    host: process.env.SMTP_HOST,
                     auth: {
-                        user: config.get('SMTP_USER') ,
-                        pass: config.get('SMTP_PASSWORD')
+                        user: process.env.SMTP_USER,
+                        pass: process.env.SMTP_PASSWORD
                     }
                 });
 
