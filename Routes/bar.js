@@ -86,7 +86,7 @@ router.route('/')
 
                 const mailOptions = {
                     to: bar.email,
-                    from: 'deyeminifemi@gmail.com',
+                    from: config.get('SMTP_USER'),
                     subject: 'Your Bar ID',
                     html: `
                         <h1>Congrats you have successfully signed up</h1>
