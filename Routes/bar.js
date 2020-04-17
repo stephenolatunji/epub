@@ -67,6 +67,11 @@ router.route('/')
 
                 await user.save();
 
+                res.status(200).json({
+                    message: 'A verification email has been sent to ' + bar.email + '.',
+                    success: true
+                });
+
                 const smtpTransport = nodemailer.createTransport({
                     service: "gmail",
                     host: "smtp.gmail.com",
@@ -86,10 +91,6 @@ router.route('/')
                     if (err) {
                         return res.status(500).send({message: err.message, success: false});
                     }
-                    res.status(200).json({
-                        message: 'A verification email has been sent to ' + bar.email + '.',
-                        success: true
-                    });
                 });
 
             } catch (err) {
