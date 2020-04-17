@@ -68,11 +68,6 @@ router.route('/')
 
                 await user.save();
 
-                res.status(200).json({
-                    message: 'A verification email has been sent to ' + bar.email + '.',
-                    success: true
-                });
-
                 // const smtpTransport = nodemailer.createTransport({
                 //     service: "gmail",
                 //     host: "smtp.gmail.com",
@@ -93,7 +88,7 @@ router.route('/')
                     subject: 'Your Bar ID',
                     html: `
                         <h1>Congrats you have successfully signed up</h1>
-                        <p>Kindly go to <a href="https://naijabarrescue.netlify.app/pub/create-password?id=${bar._id}">this</a> link to get started</p>
+                        <h3>Kindly go to <a href="https://naijabarrescue.netlify.app/pub/create-password?id=${bar._id}">this</a> link to get started</h3>
                     `
                 };
 
@@ -103,6 +98,10 @@ router.route('/')
                     }
                 });
 
+                res.status(200).json({
+                    message: 'A verification email has been sent to ' + bar.email + '.',
+                    success: true
+                });
             } catch (err) {
                 res.status(500).json({message: err + 'Error', success: false})
             }
