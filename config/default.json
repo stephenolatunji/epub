@@ -1,5 +1,8 @@
 {
     "mongoURI": "mongodb+srv://steve:korr@cluster0-vvvdj.mongodb.net/test?retryWrites=true&w=majority",
     "HIDDEN_SECRET": "inbev",
-    "jwtSecret": "AB-INBEV"
+    "jwtSecret": "AB-INBEV",
+    "SMTP_HOST": "naijabarrescue.com",
+    "SMTP_USER": "customer@naijabarrescue.com",
+    "SMTP_PASSWORD": "JdezE&0SAI"
 }

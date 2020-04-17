@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const nodemailer = require('nodemailer');
-const randomize = require('randomatic');
 const sendGridTransport = require('nodemailer-sendgrid-transport');
+const config = require('config');
 
 const Bar = require('../Models/Bar');
 const Token = require('../Models/Token');
@@ -69,12 +69,15 @@ router.route('/')
                 await user.save();
 
                 // const smtpTransport = nodemailer.createTransport({
-                //     service: "gmail",
-                //     host: "smtp.gmail.com",
+                //     service: "IMAP",
+                //     host: config.get('SMTP_HOST') ,
                 //     auth: {
-                //         user: "addeufemy@gmail.com",
-                //         pass: "P1SSWOR4!"
+                //         api_key: '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'
+                //         user: config.get('SMTP_USER') ,
+                //         pass: config.get('SMTP_PASSWORD')
                 //     }
+                // }));
+
                 // });
                 const smtpTransport = nodemailer.createTransport(sendGridTransport({
                     auth: {
