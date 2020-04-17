@@ -80,7 +80,7 @@ router.route('/')
     });
 
 router.route('/login').post(async(req, res) => {
-    const {email, password} = req;
+    const {email, password} = req.body;
 
     const user = await User.findOne({email});
 

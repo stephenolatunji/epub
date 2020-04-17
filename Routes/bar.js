@@ -105,8 +105,6 @@ router.route('/')
                     }
                 });
 
-            
-
                 const mailOptions = {
                     to: bar.email,
                     from: config.get('SMTP_USER'),
