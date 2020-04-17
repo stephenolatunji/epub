@@ -77,13 +77,6 @@ router.route('/')
                     }
                 });
 
-                // });
-                // const smtpTransport = nodemailer.createTransport(sendGridTransport({
-                //     auth: {
-                //         api_key: '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'
-                //     }
-                // }));
-
                 const mailOptions = {
                     to: bar.email,
                     from: config.get('SMTP_USER'),
