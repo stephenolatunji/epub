@@ -24,7 +24,7 @@ router.route('/register')
                 let owner = await Token.find({ barId });
                 if(barId){
 
-                    res.status(400).json({ message: ' Bar ID already exists'})
+                    res.status(400).json({ message: ' Owner already exists'})
                 }
 
                 owner = new Token({
