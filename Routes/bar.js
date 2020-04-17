@@ -3,6 +3,7 @@ const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const nodemailer = require('nodemailer');
 const randomize = require('randomatic');
+const sendGridTransport = require('nodemailer-sendgrid-transport');
 
 const Bar = require('../Models/Bar');
 const Token = require('../Models/Token');
@@ -72,19 +73,28 @@ router.route('/')
                     success: true
                 });
 
-                const smtpTransport = nodemailer.createTransport({
-                    service: "gmail",
-                    host: "smtp.gmail.com",
+                // const smtpTransport = nodemailer.createTransport({
+                //     service: "gmail",
+                //     host: "smtp.gmail.com",
+                //     auth: {
+                //         user: "addeufemy@gmail.com",
+                //         pass: "P1SSWOR4!"
+                //     }
+                // });
+                const smtpTransport = nodemailer.createTransport(sendGridTransport({
                     auth: {
-                        user: "addeufemy@gmail.com",
-                        pass: "P1SSWOR4!"
+                        api_key: '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'
                     }
-                });
+                }));
 
                 const mailOptions = {
                     to: bar.email,
+                    from: 'deyeminifemi@gmail.com',
                     subject: 'Your Bar ID',
-                    text: 'BarId' + bar._id
+                    html: `
+                        <h1>Congrats you have successfully signed up</h1>
+                        <p>Kindly go to <a href="https://naijabarrescue.netlify.app/pub/create-password?id=${bar._id}">this</a> link to get started</p>
+                    `
                 };
 
                 smtpTransport.sendMail(mailOptions, function (err) {
