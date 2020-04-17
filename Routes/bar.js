@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const nodemailer = require('nodemailer');
-const sendGridTransport = require('nodemailer-sendgrid-transport');
+require('dotenv/config');
 const config = require('config');
+
 
 const Bar = require('../Models/Bar');
 const Token = require('../Models/Token');
