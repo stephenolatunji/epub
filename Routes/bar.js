@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const nodemailer = require('nodemailer');
+const sendGridTransport = require('nodemailer-sendgrid-transport');
 const config = require('config');
 
 const Bar = require('../Models/Bar');
@@ -76,22 +77,33 @@ router.route('/')
                     }
                 });
 
+                // });
+                // const smtpTransport = nodemailer.createTransport(sendGridTransport({
+                //     auth: {
+                //         api_key: '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'
+                //     }
+                // }));
+
                 const mailOptions = {
                     to: bar.email,
+                    from: config.get('SMTP_USER'),
                     subject: 'Your Bar ID',
-                    text: 'BarId' + bar._id
+                    html: `
+                        <h1>Congrats you have successfully signed up</h1>
+                        <h3>Kindly go to <a href="https://naijabarrescue.netlify.app/pub/create-password?id=${bar._id}">this</a> link to get started</h3>
+                    `
                 };
 
                 smtpTransport.sendMail(mailOptions, function (err) {
                     if (err) {
                         return res.status(500).send({message: err.message, success: false});
                     }
-                    res.status(200).json({
-                        message: 'A verification email has been sent to ' + bar.email + '.',
-                        success: true
-                    });
                 });
 
+                res.status(200).json({
+                    message: 'A verification email has been sent to ' + bar.email + '.',
+                    success: true
+                });
             } catch (err) {
                 res.status(500).json({message: err + 'Error', success: false})
             }

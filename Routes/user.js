@@ -26,7 +26,7 @@ router.route('/')
 
         const errors = validationResult(req);
         if(!errors.isEmpty()){
-            res.status(400).json({errors: errors.array()});
+            res.status(400).json({message: errors.array(), success: false});
 
         }
         const { firstname, lastname, email, password } =  req.body;
@@ -35,7 +35,7 @@ router.route('/')
 
             let user = await User.findOne({ email });
             if(user){
-                return res.status(400).json({message: 'User already exists'})
+                return res.status(400).json({message: 'User already exists', success: false})
             }
 
             user = new User({
@@ -43,7 +43,7 @@ router.route('/')
                 lastname,
                 email,
                 password
-            })
+            });
 
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(password, salt);
@@ -54,17 +54,17 @@ router.route('/')
                 user: {
                     id: user.id
                 }
-            }
+            };
 
             jwt.sign(payload, config.get('jwtSecret'), {
                 expiresIn: 3600
             }, (err, token) => {
                 if(err) throw err;
-                res.json({ token });
+                res.json({ token, user, success: true });
             });
         }
         catch(err){
-            res.status(500).json(err + 'Error')
+            res.status(500).json({message: err + 'Error', success: false})
         }
        
     })
@@ -79,6 +79,34 @@ router.route('/')
         }
     });
 
+router.route('/login').post(async(req, res) => {
+    const {email, password} = req;
+
+    const user = await User.findOne({email});
+
+    if(!user){
+        return res.status(404).json({success: false, message: 'User not found'})
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if(!isMatch){
+        return res.status(401).json({success: false, message: 'Invalid details'})
+    }
+
+    const payload = {
+        user: {
+            id: user.id
+        }
+    };
+
+    jwt.sign(payload, config.get('jwtSecret'), {
+        expiresIn: 3600
+    }, (err, token) => {
+        if(err) throw err;
+        res.json({ token, user, success: true });
+    });
+});
 
 
 module.exports = router;
