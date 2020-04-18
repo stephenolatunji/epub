@@ -65,7 +65,7 @@ router.route('/')
 
 
             try {
-                const prevBar = await Bar.find({email});
+                const prevBar = await Bar.findOne({email});
 
                 if(prevBar){
                     return res.status(400).json({success: false, message: 'User already exists'})
@@ -92,7 +92,8 @@ router.route('/')
                 const user = new Token({
                     bar: bar._id,
                     firstName,
-                    lastName
+                    lastName,
+                    email
                 });
 
                 await user.save();
