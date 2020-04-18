@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/oauth');
 const nodemailer = require('nodemailer');
+const path = require('path');
+const Email = require('email-templates');
 
 const Order = require('../Models/Order');
 const Voucher = require('../Models/Voucher');
@@ -55,40 +57,46 @@ router.route('/')
             const user = await User.findById(userId);
             const bar = await Bar.findById(barId);
 
-            const vouchersHtml = vouchersDb.map(({_id, price, quantity,total}) => (
-                `
-                    <div>
-                        <h4>${bar.barName}</h4>
-                        <p><b>Voucher ID: </b>${_id}</p>
-                        <p><b>Quantity: </b>${quantity}</p>
-                        <p><b>Price: </b>${price}</p>
-                        <p><b>Total: </b>${total}</p>
-                    </div>
-                `
-            )).join('');
+            const vouchersMail = vouchers.map(({quantity, price}) => ({
+                title: `${bar.barName} x ${quantity}`,
+                price,
+                image: bar.image
+            }));
 
             const mailOptions = {
                 to: user.email,
                 from: process.env.SMTP_USER,
                 subject: 'Bought Vouchers!',
-                html: `
-                        <h1>Congrats you have successfully purchased vouchers.</h1>
-                        <h3>
-                         Kindly find the details below
-                        </h3>
-                        ${vouchersHtml}
-                    `
             };
 
-            smtpTransport.sendMail(mailOptions, function (err) {
-                if (err) {
-                    return res.status(500).send({message: err.message, success: false});
-                }
-                res.json({
-                    success: true,
-                    order
-                })
+
+            const email = new Email({
+                juice: true,
+                juiceResources: {
+                    preserveImportant: true,
+                    webResources: {
+                        relativeTo: path.resolve('emails')
+                    }
+                },
+                transport: smtpTransport,
+                //Uncomment this line to make it send mails in development
+                // send: true
             });
+
+            await email.send({
+                message: mailOptions,
+                template: 'order',
+                locals: {
+                    orderId: `#${order._id}`.toUpperCase(),
+                    vouchers: vouchersMail
+                }
+            });
+
+
+            res.json({
+                success: true,
+                order
+            })
         } catch (err) {
             res.status(500).json({
                 success: false,
