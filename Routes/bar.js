@@ -89,7 +89,7 @@ router.route('/')
 
                 await bar.save();
 
-                const user = new Token({
+                const user = new BarOwner({
                     bar: bar._id,
                     firstName,
                     lastName,
@@ -137,6 +137,8 @@ router.route('/')
                     });
                 });
             } catch (err) {
+                await BarOwner.deleteOne({email});
+                await Bar.deleteOne({email});
                 res.status(500).json({message: err + 'Error', success: false})
             }
         })
