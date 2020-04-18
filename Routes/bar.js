@@ -65,6 +65,7 @@ router.route('/')
                 email
             } = req.body;
 
+
             try {
                 const bar = new Bar({
                     barName,
