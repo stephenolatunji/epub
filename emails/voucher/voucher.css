@@ -1,0 +1,83 @@
+*{
+    margin: 0;
+    font-family: Arial;
+}
+
+.voucherGrid{
+    display: grid;
+    grid-template-columns: 1fr 0.8fr;
+    height: 320px;
+    width: 100%;
+    max-width: 720px;
+    margin: 20px auto;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px #c8c8c8;
+}
+
+.voucherDetails{
+    background-color: #b11917;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: white;
+}
+
+.voucherDetailsTitle{
+    font-size: 20px;
+}
+
+.voucherDetailsPrice{
+    font-size: 60px;
+}
+
+.voucherDetailsName{
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.voucherId{
+    border-left: 4px dashed #b11917;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px 30px;
+}
+
+.voucherIdCode{
+    padding: 20px;
+    border: 3px solid #b11917;
+}
+
+.voucherIdCodeHeader{
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: gray;
+    text-align: center;
+}
+
+.voucherIdCodeText{
+    font-size: 28px;
+    color: #333333;
+    text-align: center;
+}
+
+.voucherIdSplit{
+    width: 100%;
+    background-color: #e6e6e6;
+    height: 1px;
+    display: flex;
+    margin: 40px 0 20px;
+}
+
+.voucherIdOnce{
+    font-size: 16px;
+    color: gray;
+    margin-top: 10px;
+}
+
+.codeExpires{
+    color: gray;
+    font-weight: bold;
+}

@@ -1,0 +1,19 @@
+doctype html
+html(lang="en")
+    head
+        link(rel="stylesheet", href="voucher/voucher.css", data-inline)
+    body
+        div.voucherGrid
+            div.voucherDetails
+                h3.voucherDetailsTitle GIFT VOUCHER
+                h1.voucherDetailsPrice ₦#{price}
+                div
+                    h5.voucherDetailsName #{name}
+                    p #{address}
+            div.voucherId
+                div.voucherIdCode
+                    h3.voucherIdCodeHeader VOUCHER CODE
+                    h5.voucherIdCodeText #{id}
+                p.voucherIdOnce This code can only be used once
+                span.voucherIdSplit
+                p.codeExpires Code valid till 31 - 12 - 2020

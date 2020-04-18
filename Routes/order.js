@@ -10,6 +10,23 @@ const Voucher = require('../Models/Voucher');
 const User = require('../Models/User');
 const Bar = require('../Models/Bar');
 
+const {default: HTMLToPDF} = require('convert-html-to-pdf');
+
+const emailRender = new Email({
+    juice: true,
+    juiceResources: {
+        preserveImportant: true,
+        webResources: {
+            relativeTo: path.resolve('emails')
+        }
+    },
+});
+
+const getVoucherHTML = (options) => {
+    return emailRender.render('voucher/html', options)
+};
+
+
 router.route('/')
 
 
@@ -65,10 +82,31 @@ router.route('/')
                 })
             );
 
+
+            //TODO: Refractor to prevent fetching bar twice
+            const attachments = await Promise.all(
+                vouchersDb.map(async ({quantity, price, barId, _id}) => {
+                    const bar = await Bar.findById(barId);
+                    const voucherHTML = await getVoucherHTML({
+                        price: `${price} x ${quantity}`,
+                        address: bar.address,
+                        name: bar.barName,
+                        id: _id
+                    });
+                    const pdf = new HTMLToPDF(voucherHTML);
+                    const buffer = await pdf.convert();
+                    return {
+                        content: buffer,
+                        fileName: `${bar.barName} * ${quantity}.pdf`
+                    };
+                })
+            );
+
             const mailOptions = {
                 to: user.email,
                 from: process.env.SMTP_USER,
                 subject: 'Bought Vouchers!',
+                attachments
             };
 
 
