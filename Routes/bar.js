@@ -142,24 +142,31 @@ router.route('/')
     // @desc        Fetch all bars
     // access       Public
     .get(async (req, res) => {
+        const { page = 1, sort = null, state = null, pageSize = 8 } = req.query;
 
-        // destructure page and limit and set default values
-        const { page = 1, limit = 24 } = req.query;
+        let query = {
+            skip: (page - 1) * pageSize,
+            limit: pageSize
+        };
+
+        const projection = {};
+
+        if(sort && sort.slice(1) === 'name'){
+            query.sort = { barName: sort.slice(0,1) === '+' ? 1 : -1 }
+        }
+
+        if(state){
+            projection.state = {eq: state};
+        }
 
         try {
-
-            // execute query with page and limit values
-            const bar = await Bar.find({barName: req.body.params})
-            .sort({barName: l})
-            .limit(limit * 1)
-            .skip((page - 1) * limit)
-            .exec();
+            const bar = await Bar.find(null, projection, query);
 
             const count = await Bar.countDocuments();
 
             res.json({
                 bar,
-                totalPages: Math.ceil(count / limit),
+                totalPages: Math.ceil(count / pageSize),
                 currentPage: page
             });
         } catch (err) {
