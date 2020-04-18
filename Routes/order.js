@@ -12,6 +12,8 @@ const Bar = require('../Models/Bar');
 
 const {default: HTMLToPDF} = require('convert-html-to-pdf');
 
+const {htmlToPdf} = require('../utils');
+
 const emailRender = new Email({
     juice: true,
     juiceResources: {
@@ -93,10 +95,11 @@ router.route('/')
                         name: bar.barName,
                         id: _id
                     });
-                    const pdf = new HTMLToPDF(voucherHTML);
-                    const buffer = await pdf.convert();
+                    // const pdf = new HTMLToPDF(voucherHTML);
+                    // const buffer = await pdf.convert();
+                    const pdf = await htmlToPdf(voucherHTML);
                     return {
-                        content: buffer,
+                        content: pdf,
                         fileName: `${bar.barName} * ${quantity}.pdf`
                     };
                 })
