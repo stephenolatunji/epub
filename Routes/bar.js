@@ -148,7 +148,8 @@ router.route('/')
         try {
 
             // execute query with page and limit values
-            const bar = await Bar.find()
+            const bar = await Bar.find({barName: req.body.params})
+            .sort({barName: l})
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
