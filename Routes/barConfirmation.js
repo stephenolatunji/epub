@@ -4,6 +4,7 @@ const {check, validationResult} = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const mongoose = require('mongoose');
 
 const Token = require('../Models/Token');
 
@@ -71,10 +72,18 @@ router.route('/login')
             const {barId, password} = req.body;
             try {
 
-                let owner = await Token.findOne({bar: barId}).populate('bar');
-                if (!owner) {
+                let owner;
+
+                if(isObjectId(barId)){
+                    owner = await Token.findById(barId).populate('bar');
+                }else{
+                    owner = await Token.findOne({email: barId}).populate('bar');
+                }
+
+                if(!owner){
                     return res.status(400).json({message: 'Invalid Credentials', success: false});
                 }
+
                 const isMatch = await bcrypt.compare(password, owner.password);
 
                 if (!isMatch) {
@@ -102,5 +111,13 @@ router.route('/login')
                 res.status(500).json({message: err + 'Error', success: false})
             }
         });
+
+const isObjectId = (str) => {
+    try{
+        return str === new mongoose.Types.ObjectId(str)
+    }catch (e) {
+        return false
+    }
+};
 
 module.exports = router;
