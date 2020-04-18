@@ -1,0 +1,65 @@
+.container{
+    max-width: 600px;
+    margin: auto;
+}
+.top{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 40px 40px 0px;
+}
+
+.logo{
+    width: 100px;
+}
+
+.order-id{
+    color: lightgrey;
+    font-family: "Roboto Light";
+}
+
+a{
+    text-decoration: none;
+}
+
+.view-orders{
+    background-color: #b11917;
+    color: white;
+    display: block;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+
+.visit-store{
+    color: #b11917;
+    margin-bottom: 35px;
+    display: block;
+}
+
+.order{
+    display: flex;
+    grid-template-columns: 80px auto auto;
+    align-items: center;
+    grid-column-gap: 10px;
+}
+
+.order__image{
+    width: 80px;
+    height: 80px;
+    border-radius: 5px;
+    margin-right: 20px;
+    object-fit: cover;
+}
+
+.order__title{
+    font-size: 14px;
+    color: #333;
+    font-weight: bold;
+    margin-right: auto;
+}
+
+.order + .order{
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e6e6e6;
+}
