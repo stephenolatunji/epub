@@ -35,7 +35,11 @@ router.route('/')
     // @desc        Register new bars
     // access       Public
 
-    .post(
+    .post( [
+        check('barName', 'Enter a Bar Name').not().isEmpty(),
+        check('bvn', 'Enter a valid BVN').isLength({ min: 11 }),
+        check('email', 'Enter a valid email').isEmail(),
+    ],
         parser.single('image'),
         async (req, res) => {
 
@@ -137,13 +141,27 @@ router.route('/')
     // @route       GET/
     // @desc        Fetch all bars
     // access       Public
-
     .get(async (req, res) => {
+
+        // destructure page and limit and set default values
+        const { page = 1, limit = 24 } = req.query;
 
         try {
 
-            const bar = await Bar.find().populate('bar', []);
-            res.json(bar);
+            // execute query with page and limit values
+            const bar = await Bar.find({barName: req.body.params})
+            .sort({barName: l})
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .exec();
+
+            const count = await Bar.countDocuments();
+
+            res.json({
+                bar,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page
+            });
         } catch (err) {
             res.status(500).json(err + 'Error')
         }
