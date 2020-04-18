@@ -115,7 +115,7 @@ router.post('/reset-password', async (req, res) => {
         const user = await User.findOne({email});
 
         if (!user) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: 'User not found'
             })
@@ -161,5 +161,40 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
+router.post('/new-password', async (req,res) => {
+    try {
+        const {email, token, password} = req.body;
+
+        const user = await User.findOne({email});
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            })
+        }
+
+        if(!(
+            user.reset &&
+            user.reset.token === token &&
+            moment().isBefore(moment(user.reset.expiryDate))
+        )){
+            return res.status(400).json({success: false})
+        }
+
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+
+        await user.save();
+
+        res.json({
+            success: true
+        })
+    }catch (e) {
+        console.log(e);
+        res.status(500).json({success: false})
+    }
+});
 
 module.exports = router;
