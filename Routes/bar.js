@@ -118,6 +118,9 @@ router.route('/')
                             Follow <a href="https://naijabarrescue.netlify.app/pub/create-password?id=${bar._id}">this</a> link to sign in to your profile where you can see a list of vouchers purchased at your bar.
                         </h3>
                         <h3>
+                            Your Bar ID is ${bar._id}
+                        </h3>
+                        <h3>
                             For more information, please contact us - support@naijabarrescue.com or call 09062820138
                         </h3>
                     `
