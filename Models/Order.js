@@ -11,11 +11,6 @@ const orderSchema = new Schema({
         required: true,
         ref: 'User'
     },
-    barId: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: 'Bar'
-    },
     vouchers: [
         {
             type: Schema.Types.ObjectId,
