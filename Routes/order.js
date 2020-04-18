@@ -183,4 +183,28 @@ router.route('/')
             }
         });
 
+    router.get('/byUser/:userId', async (req, res) => {
+        try{
+            const vouchers = await Voucher.find({userId: req.params.userId});
+            res.json({
+                success: true,
+                vouchers
+            })
+        }catch (e) {
+            res.status(500).json({success: false})
+        }
+    });
+
+    router.get('/byOwner/:barId', async (req, res) => {
+        try{
+            const vouchers = await Voucher.find({barId: req.params.barId}).populate('userId');
+            res.json({
+                success: true,
+                vouchers
+            })
+        }catch (e) {
+            res.status(500).json({success: false})
+        }
+    });
+
 module.exports = router;
