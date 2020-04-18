@@ -162,4 +162,26 @@ router.route('/')
         }
     });
 
+
+
+    router.route('/verify/:_id')
+        .post( async (req, res) => {
+
+            try{
+
+                const verifyVoucher = await Voucher.findById({_id: req.params._id});
+                if(!verifyVoucher){
+                    return res.status(404).json({message: 'Voucher does not exist'})
+                }else{
+                    return res.json({
+                        success: true,
+                        message: 'Voucher found!'
+                    });
+                }
+
+            }catch(err){
+                res.status(500).json(err + 'Error')
+            }
+        })
+
 module.exports = router;
