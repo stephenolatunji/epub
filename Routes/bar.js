@@ -44,8 +44,6 @@ router.route('/')
                 return res.status(400).json({errors: errors.array()})
             }
 
-            console.log(req.body);
-
             const image = {};
             image.url = req.file.url;
             image.id = req.file.public_id;
@@ -67,6 +65,12 @@ router.route('/')
 
 
             try {
+                const prevBar = await Bar.find({email});
+
+                if(prevBar){
+                    return res.status(400).json({success: false, message: 'User already exists'})
+                }
+
                 const bar = new Bar({
                     barName,
                     address,
