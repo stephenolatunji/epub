@@ -100,6 +100,8 @@ router.route('/')
                     const pdf = await htmlToPdf(voucherHTML);
                     return {
                         content: pdf,
+                        contentType:'application/pdf',
+                        contentDisposition:'attachment',
                         fileName: `${bar.barName} * ${quantity}.pdf`
                     };
                 })
