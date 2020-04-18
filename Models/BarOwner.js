@@ -26,6 +26,11 @@ const barOwnerSchema = new Schema({
 
     email: {
         type: String
+    },
+
+    reset: {
+        token: String,
+        expiryDate: Date
     }
 });
 

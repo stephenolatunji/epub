@@ -5,7 +5,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const mongoose = require('mongoose');
-
+const {APP_URL, smtpTransport} = require('../utils');
+const moment = require('moment');
+const randomize = require('randomatic');
 const BarOwner = require('../Models/BarOwner');
 
 router.route('/register')
@@ -111,6 +113,95 @@ router.route('/login')
                 res.status(500).json({message: err + 'Error', success: false})
             }
         });
+
+router.post('/reset-password', async (req, res) => {
+    try {
+        const {email} = req.body;
+
+        const owner = await BarOwner.findOne({email});
+
+        if (!owner) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            })
+        }
+
+        const token = randomize('Aa0', 10);
+        const expiryDate = new Date().getTime() + (36000 * 1000); //10 hours from now
+
+        owner.reset = {
+            token,
+            expiryDate
+        };
+
+        await owner.save();
+
+        const mailOptions = {
+            to: owner.email,
+            from: process.env.SMTP_USER,
+            subject: 'Your Bar ID',
+            html: `
+                    <h1>Password Reset</h1>
+                    <h3>
+                        Follow <a href="${APP_URL}/pub/set-password?token=${token}">this</a> link to reset your password
+                    </h3>
+                    <h5>
+                        It expires at ${moment().format('MMMM Do YYYY, h:mm:ss a')}
+                    </h5>
+                `
+        };
+
+        smtpTransport.sendMail(mailOptions,(err) => {
+            if (err) {
+                return res.status(500).send({message: err.message, success: false});
+            }
+
+            res.json({
+                success: true
+            });
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({success: false})
+    }
+});
+
+router.post('/new-password', async (req,res) => {
+    try {
+        const {email, token, password} = req.body;
+
+        const owner = await BarOwner.findOne({email});
+
+        if (!owner) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            })
+        }
+
+        if(!(
+            owner.reset &&
+            owner.reset.token === token &&
+            moment().isBefore(moment(owner.reset.expiryDate))
+        )){
+            return res.status(400).json({success: false})
+        }
+
+
+        const salt = await bcrypt.genSalt(10);
+        owner.password = await bcrypt.hash(password, salt);
+
+        await owner.save();
+
+        res.json({
+            success: true
+        })
+    }catch (e) {
+        console.log(e);
+        res.status(500).json({success: false})
+    }
+});
 
 const isObjectId = (str) => {
     try{
