@@ -6,7 +6,8 @@ module.exports = {
         const base64 = buffer.toString('base64');
         const generatedBase64 = 'data:text/html;base64,' + base64;
 
-        const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
+        const browser = await puppeteer.launch({ headless: true, args:['--no-sandbox', '--disable-setuid-sandbox'] });
+
         const page = await browser.newPage();
 
         await page.goto(generatedBase64, {waitUntil: 'networkidle0'});
