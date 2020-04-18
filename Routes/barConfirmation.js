@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 const Token = require('../Models/Token');
-const Bar = require('../Models/Bar');
 
 router.route('/register')
 
@@ -32,10 +33,23 @@ router.route('/register')
                 owner.password = await bcrypt.hash(password, salt);
 
                 await owner.save();
-                const ownerObj = owner.toJSON();
+
+                const ownerObj = owner.toObject();
                 delete ownerObj.password;
 
-                res.json({owner: ownerObj, success: true});
+                const payload = {
+                    user: {
+                        id: owner._id
+                    },
+                    barOwner: true
+                };
+
+                jwt.sign(payload, config.get('jwtSecret'), {
+                    expiresIn: 3600
+                }, (err, token) => {
+                    if(err) throw err;
+                    res.json({ token, owner: ownerObj, success: true });
+                });
             } catch (err) {
                 res.status(500).json({message: err + 'Error', success: false})
             }
@@ -66,7 +80,24 @@ router.route('/login')
                 if (!isMatch) {
                     return res.status(400).json({message: 'Invalid password', success: false});
                 }
-                return res.json({owner, success: true})
+
+                const ownerObj = owner.toObject();
+                delete ownerObj.password;
+
+                const payload = {
+                    user: {
+                        id: owner._id
+                    },
+                    barOwner: true
+                };
+
+                jwt.sign(payload, config.get('jwtSecret'), {
+                    expiresIn: 3600
+                }, (err, token) => {
+                    if(err) throw err;
+                    res.json({ token, owner: ownerObj, success: true });
+                });
+
             } catch (err) {
                 res.status(500).json({message: err + 'Error', success: false})
             }
