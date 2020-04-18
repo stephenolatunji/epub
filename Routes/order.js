@@ -169,7 +169,7 @@ router.route('/')
 
             try{
 
-                const verifyVoucher = await Voucher.findById({_id: req.params._id});
+                const verifyVoucher = await Voucher.findById(req.params._id);
                 if(!verifyVoucher){
                     return res.status(404).json({message: 'Voucher does not exist'})
                 }else{
@@ -178,10 +178,9 @@ router.route('/')
                         message: 'Voucher found!'
                     });
                 }
-
             }catch(err){
                 res.status(500).json(err + 'Error')
             }
-        })
+        });
 
 module.exports = router;
