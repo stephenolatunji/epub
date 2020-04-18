@@ -20,13 +20,12 @@ router.route('/')
     // .post(auth, async (req, res) => {
     .post(async (req, res) => {
 
-        const {reference, userId, barId, vouchers} = req.body;
+        const {reference, userId, vouchers} = req.body;
 
         //Verify reference using https://api.paystack.co/transaction/verify/refId
 
-
         try {
-            const vouchersMapped = vouchers.map(({price, quantity}) => ({
+            const vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
                 price,
                 quantity,
                 userId,
@@ -37,9 +36,8 @@ router.route('/')
             const vouchersDb = await Voucher.create(vouchersMapped);
 
 
-            const order = new Order({
+            const order = await Order.create({
                 userId,
-                barId,
                 vouchers: vouchersDb,
                 total: vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0)
             });
@@ -55,13 +53,17 @@ router.route('/')
             });
 
             const user = await User.findById(userId);
-            const bar = await Bar.findById(barId);
 
-            const vouchersMail = vouchers.map(({quantity, price}) => ({
-                title: `${bar.barName} x ${quantity}`,
-                price,
-                image: bar.image
-            }));
+            const vouchersMail = await Promise.all(
+                vouchers.map(async ({quantity, price, barId}) => {
+                    const bar = await Bar.findById(barId);
+                    return {
+                        title: `${bar.barName} x ${quantity}`,
+                        price,
+                        image: bar.image
+                    }
+                })
+            );
 
             const mailOptions = {
                 to: user.email,
