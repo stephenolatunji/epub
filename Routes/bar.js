@@ -7,7 +7,7 @@ const config = require('config');
 const multer = require("multer");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
-
+const {APP_URL} = require('../utils');
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -116,7 +116,7 @@ router.route('/')
                         <h1>Congrats you have successfully signed up</h1>
                         <h3>
                             Thank you for joining for the Naija Bar Rescue Initiative, now your consumers will be able to see your bar on the platform and buy vouchers.
-                            Follow <a href="https://naijabarrescue.netlify.app/pub/create-password?id=${bar._id}">this</a> link to sign in to your profile where you can see a list of vouchers purchased at your bar.
+                            Follow <a href="${APP_URL}/pub/create-password?id=${bar._id}">this</a> link to sign in to your profile where you can see a list of vouchers purchased at your bar.
                         </h3>
                         <h3>
                             Your Bar ID is ${bar._id}
