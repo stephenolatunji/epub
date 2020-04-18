@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const User = require('../Models/User');
-const Token = require('../Models/Token');
+const BarOwner = require('../Models/BarOwner');
 
 module.exports = async function(req, res, next){
 
@@ -16,7 +16,7 @@ module.exports = async function(req, res, next){
     try{
         const payload = jwt.verify(token, config.get('jwtSecret'));
         if(payload.barOwner){
-            const owner = await Token.findById(payload.user.id);
+            const owner = await BarOwner.findById(payload.user.id);
 
             if(owner){
                 req.user = owner;

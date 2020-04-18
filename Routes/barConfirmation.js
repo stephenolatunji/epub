@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const mongoose = require('mongoose');
 
-const Token = require('../Models/Token');
+const BarOwner = require('../Models/BarOwner');
 
 router.route('/register')
 
@@ -25,7 +25,7 @@ router.route('/register')
 
                 const {barId, password} = req.body;
 
-                const owner = await Token.findOne({bar: barId}).populate('bar');
+                const owner = await BarOwner.findOne({bar: barId}).populate('bar');
                 if (!owner) {
                     return res.status(400).json({message: 'User does not exist', success: false})
                 }
@@ -75,9 +75,9 @@ router.route('/login')
                 let owner;
 
                 if(isObjectId(barId)){
-                    owner = await Token.findById(barId).populate('bar');
+                    owner = await BarOwner.findById(barId).populate('bar');
                 }else{
-                    owner = await Token.findOne({email: barId}).populate('bar');
+                    owner = await BarOwner.findOne({email: barId}).populate('bar');
                 }
 
                 if(!owner){

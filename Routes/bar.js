@@ -25,7 +25,7 @@ const parser = multer({storage: storage});
 
 
 const Bar = require('../Models/Bar');
-const Token = require('../Models/Token');
+const BarOwner = require('../Models/BarOwner');
 
 
 router.route('/')
