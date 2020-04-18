@@ -35,11 +35,7 @@ router.route('/')
     // @desc        Register new bars
     // access       Public
 
-    .post( [
-        check('barName', 'Enter a Bar Name').not().isEmpty(),
-        check('bvn', 'Enter a valid BVN').isLength({ min: 11 }),
-        check('email', 'Enter a valid email').isEmail(),
-    ],
+    .post(
         parser.single('image'),
         async (req, res) => {
 
