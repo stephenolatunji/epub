@@ -160,17 +160,18 @@ router.route('/')
         }
 
         try {
-            const bar = await Bar.find(null, projection, query);
+            const bars = await Bar.find(null, projection, query);
 
             const count = await Bar.countDocuments();
 
             res.json({
-                bar,
+                success: true,
+                bars,
                 totalPages: Math.ceil(count / pageSize),
                 currentPage: page
             });
         } catch (err) {
-            res.status(500).json(err + 'Error')
+            res.status(500).json({success: false, message: err + 'Error'})
         }
     });
 
