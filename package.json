@@ -17,6 +17,7 @@
     "connect-flash": "^0.1.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
+    "email-templates": "^7.0.4",
     "express": "^4.17.1",
     "express-session": "^1.17.0",
     "express-validator": "^6.4.0",
@@ -30,6 +31,7 @@
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^6.0.1",
     "paystack": "^2.0.1",
+    "pug": "^2.0.4",
     "randomatic": "^3.1.1"
   },
   "devDependencies": {
