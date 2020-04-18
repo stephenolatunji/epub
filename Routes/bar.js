@@ -142,27 +142,30 @@ router.route('/')
     // @desc        Fetch all bars
     // access       Public
     .get(async (req, res) => {
-        const { page = 1, sort = null, state = null, pageSize = 8 } = req.query;
+        let { page = 1, sort = null, state = null, pageSize = 8 } = req.query;
+
+        pageSize = Number(pageSize);
+        page = Number(page);
 
         let query = {
             skip: (page - 1) * pageSize,
             limit: pageSize
         };
 
-        const projection = {};
+        const filter = {};
 
         if(sort && sort.slice(1) === 'name'){
             query.sort = { barName: sort.slice(0,1) === '+' ? 1 : -1 }
         }
 
         if(state){
-            projection.state = {eq: state};
+            filter.city = new RegExp(state, 'i');
         }
 
         try {
-            const bars = await Bar.find(null, projection, query);
+            const bars = await Bar.find(filter, null, query).lean();
 
-            const count = await Bar.countDocuments();
+            const count = await Bar.countDocuments(filter);
 
             res.json({
                 success: true,
