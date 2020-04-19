@@ -90,6 +90,10 @@ router.route('/login')
                     return res.status(400).json({message: 'Invalid Credentials', success: false});
                 }
 
+                if(!owner.bar.confirmed){
+                    return res.status(401).json({message: 'User not confirmed', success: false})
+                }
+
                 const isMatch = await bcrypt.compare(password, owner.password);
 
                 if (!isMatch) {
