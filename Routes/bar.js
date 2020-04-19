@@ -114,8 +114,8 @@ router.route('/')
                     html: `
                         <h1>Congrats you have successfully signed up</h1>
                         <h3>
-                            Thank you for joining for the Naija Bar Rescue Initiative, now your consumers will be able to see your bar on the platform and buy vouchers.
-                            Follow <a href="https://naijabarrescue.netlify.app/pub/create-password?id=${bar._id}">this</a> link to sign in to your profile where you can see a list of vouchers purchased at your bar.
+                        Thank you for joining the Naija Bar Rescue Initiative. We have received your registration and it is currently being reviewed. 
+                        As soon as this is done, you will get another email from us with your uniqueID which will enable you login to your bar profile where you can view your donation history.
                         </h3>
                         <h3>
                             For more information, please contact us - support@naijabarrescue.com or call 09062820138
