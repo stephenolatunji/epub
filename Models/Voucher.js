@@ -10,7 +10,6 @@ const voucherSchema = new Schema({
     },
     userId: {
         type: Schema.Types.ObjectId,
-        required: true,
         ref: 'User'
     },
     price: {
@@ -28,6 +27,24 @@ const voucherSchema = new Schema({
     date: {
         type: Date,
         default: Date.now()
+    },
+    isGuest: {
+        type: Boolean,
+        default: false
+    },
+    guestData: {
+        firstname: {
+            type: String,
+            trim: true
+        },
+        lastname: {
+            type: String,
+            trim: true
+        },
+        email: {
+            type: String,
+            trim: true
+        }
     }
 });
 

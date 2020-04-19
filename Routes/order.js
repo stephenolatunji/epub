@@ -39,18 +39,30 @@ router.route('/')
     // .post(auth, async (req, res) => {
     .post(async (req, res) => {
 
-        const {reference, userId, vouchers} = req.body;
+        const {reference, userId, vouchers, isGuest = false, guestData} = req.body;
 
         //Verify reference using https://api.paystack.co/transaction/verify/refId
 
         try {
-            const vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
-                price,
-                quantity,
-                userId,
-                barId,
-                total: quantity * price
-            }));
+            let vouchersMapped;
+            if(isGuest){
+                vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
+                    price,
+                    quantity,
+                    isGuest,
+                    guestData,
+                    barId,
+                    total: quantity * price
+                }));
+            }else{
+                vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
+                    price,
+                    quantity,
+                    userId,
+                    barId,
+                    total: quantity * price
+                }));
+            }
 
             const vouchersDb = await Voucher.create(vouchersMapped);
 
@@ -95,8 +107,6 @@ router.route('/')
                         name: bar.barName,
                         id: _id
                     });
-                    // const pdf = new HTMLToPDF(voucherHTML);
-                    // const buffer = await pdf.convert();
                     const pdf = await htmlToPdf(voucherHTML);
                     return {
                         content: pdf,
@@ -108,7 +118,7 @@ router.route('/')
             );
 
             const mailOptions = {
-                to: user.email,
+                to: isGuest ? guestData.email : user.email,
                 from: process.env.SMTP_USER,
                 subject: 'Bought Vouchers!',
                 attachments
