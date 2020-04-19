@@ -32,6 +32,10 @@ router.route('/register')
                     return res.status(400).json({message: 'User does not exist', success: false})
                 }
 
+                if(!owner.bar.confirmed){
+                    return res.status(401).json({message: 'User not confirmed', success: false})
+                }
+
                 const salt = await bcrypt.genSalt(10);
                 owner.password = await bcrypt.hash(password, salt);
 
