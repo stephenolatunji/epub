@@ -9,6 +9,7 @@ const Order = require('../Models/Order');
 const Voucher = require('../Models/Voucher');
 const User = require('../Models/User');
 const Bar = require('../Models/Bar');
+const Total = require('../Models/Total');
 
 const {default: HTMLToPDF} = require('convert-html-to-pdf');
 
@@ -45,7 +46,7 @@ router.route('/')
 
         try {
             let vouchersMapped;
-            if(isGuest){
+            if (isGuest) {
                 vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
                     price,
                     quantity,
@@ -54,7 +55,7 @@ router.route('/')
                     barId,
                     total: quantity * price
                 }));
-            }else{
+            } else {
                 vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
                     price,
                     quantity,
@@ -64,21 +65,19 @@ router.route('/')
                 }));
             }
 
+            const ordersTotal = vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0);
+
+            if (ordersTotal > 9000) {
+                return res.status(400).json({success: false, message: 'Orders should be more than 9000'})
+            }
+
             const vouchersDb = await Voucher.create(vouchersMapped);
 
-            if(total <= 9000 ){
-
-                const order = await Order.create({
-                    userId,
-                    vouchers: vouchersDb,
-                    total: vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0)
-                });
-            }else{
-                return res.status(400).json({
-                    success: false,
-                    message: err + 'You are not allowed to make transaction of more than #9000'
-                })
-            }
+            const order = await Order.create({
+                userId,
+                vouchers: vouchersDb,
+                total: ordersTotal
+            });
 
 
             const smtpTransport = nodemailer.createTransport({
@@ -118,8 +117,8 @@ router.route('/')
                     const pdf = await htmlToPdf(voucherHTML);
                     return {
                         content: pdf,
-                        contentType:'application/pdf',
-                        contentDisposition:'attachment',
+                        contentType: 'application/pdf',
+                        contentDisposition: 'attachment',
                         fileName: `${bar.barName} * ${quantity}.pdf`
                     };
                 })
@@ -181,61 +180,60 @@ router.route('/')
     });
 
 
+router.route('/verify/:_id')
+    .get(async (req, res) => {
 
-    router.route('/verify/:_id')
-        .get( async (req, res) => {
+        try {
 
-            try{
+            const verifyVoucher = await Voucher.findById(req.params._id);
+            if (!verifyVoucher) {
+                return res.status(404).json({message: 'Voucher does not exist', success: false})
+            } else {
+                return res.json({
+                    success: true,
+                    message: 'Voucher found!'
+                });
+            }
+        } catch (err) {
+            res.status(500).json(err + 'Error')
+        }
+    });
 
-                const verifyVoucher = await Voucher.findById(req.params._id);
-                if(!verifyVoucher){
-                    return res.status(404).json({message: 'Voucher does not exist', success: false})
-                }else{
-                    return res.json({
-                        success: true,
-                        message: 'Voucher found!'
-                    });
+router.get('/byUser/:userId', async (req, res) => {
+    try {
+        const vouchers = await Voucher.find({userId: req.params.userId});
+        res.json({
+            success: true,
+            vouchers
+        })
+    } catch (e) {
+        res.status(500).json({success: false})
+    }
+});
+
+router.get('/byOwner/:barId', async (req, res) => {
+    try {
+        let vouchers = await Voucher.find({barId: req.params.barId}).populate('userId').lean();
+        vouchers = vouchers.map(({userId, isGuest, guestData, ...fields}) => {
+            if (isGuest) {
+                return {
+                    ...fields,
+                    user: guestData
                 }
-            }catch(err){
-                res.status(500).json(err + 'Error')
+            } else {
+                return {
+                    ...fields,
+                    user: userId
+                }
             }
         });
-
-    router.get('/byUser/:userId', async (req, res) => {
-        try{
-            const vouchers = await Voucher.find({userId: req.params.userId});
-            res.json({
-                success: true,
-                vouchers
-            })
-        }catch (e) {
-            res.status(500).json({success: false})
-        }
-    });
-
-    router.get('/byOwner/:barId', async (req, res) => {
-        try{
-            let vouchers = await Voucher.find({barId: req.params.barId}).populate('userId').lean();
-            vouchers = vouchers.map(({userId, isGuest,guestData, ...fields}) => {
-                if(isGuest){
-                    return {
-                        ...fields,
-                        user: guestData
-                    }
-                }else{
-                    return {
-                        ...fields,
-                        user: userId
-                    }
-                }
-            });
-            res.json({
-                success: true,
-                vouchers
-            })
-        }catch (e) {
-            res.status(500).json({success: false})
-        }
-    });
+        res.json({
+            success: true,
+            vouchers
+        })
+    } catch (e) {
+        res.status(500).json({success: false})
+    }
+});
 
 module.exports = router;
