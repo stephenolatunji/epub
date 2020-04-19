@@ -66,12 +66,20 @@ router.route('/')
 
             const vouchersDb = await Voucher.create(vouchersMapped);
 
+            if(total <= 9000 ){
 
-            const order = await Order.create({
-                userId,
-                vouchers: vouchersDb,
-                total: vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0)
-            });
+                const order = await Order.create({
+                    userId,
+                    vouchers: vouchersDb,
+                    total: vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0)
+                });
+            }else{
+                return res.status(400).json({
+                    success: false,
+                    message: err + 'You are not allowed to make transaction of more than #9000'
+                })
+            }
+
 
             const smtpTransport = nodemailer.createTransport({
                 host: process.env.SMTP_HOST,
