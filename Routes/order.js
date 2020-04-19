@@ -44,7 +44,10 @@ router.route('/')
 
         //Verify reference using https://api.paystack.co/transaction/verify/refId
 
+
         try {
+            const user = await User.findById(userId);
+
             let vouchersMapped;
             if (isGuest) {
                 vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
@@ -71,6 +74,10 @@ router.route('/')
                 return res.status(400).json({success: false, message: 'Orders should be more than 9000'})
             }
 
+            if(user.vouchersUsed >= 15){
+                return res.status(400).json({success: false, message: 'User has bought max vouchers'})
+            }
+
             const vouchersDb = await Voucher.create(vouchersMapped);
 
             const order = await Order.create({
@@ -89,8 +96,6 @@ router.route('/')
                     pass: process.env.SMTP_PASSWORD
                 }
             });
-
-            const user = await User.findById(userId);
 
             const vouchersMail = await Promise.all(
                 vouchers.map(async ({quantity, price, barId}) => {

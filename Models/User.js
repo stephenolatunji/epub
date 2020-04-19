@@ -32,6 +32,11 @@ const userSchema = new Schema({
     reset: {
         token: String,
         expiryDate: Date
+    },
+
+    vouchersUsed: {
+        type: Number,
+        default: 0
     }
 });
 
