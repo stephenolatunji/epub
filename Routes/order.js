@@ -175,13 +175,13 @@ router.route('/')
 
 
     router.route('/verify/:_id')
-        .post( async (req, res) => {
+        .get( async (req, res) => {
 
             try{
 
                 const verifyVoucher = await Voucher.findById(req.params._id);
                 if(!verifyVoucher){
-                    return res.status(404).json({message: 'Voucher does not exist'})
+                    return res.status(404).json({message: 'Voucher does not exist', success: false})
                 }else{
                     return res.json({
                         success: true,
