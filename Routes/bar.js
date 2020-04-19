@@ -148,7 +148,7 @@ router.route('/')
     // @desc        Fetch all bars
     // access       Public
     .get(async (req, res) => {
-        let { page = 1, sort = null, state = null, pageSize = 8 } = req.query;
+        let { page = 1, sort = null, state = null, pageSize = 8, search = null } = req.query;
 
         pageSize = Number(pageSize);
         page = Number(page);
@@ -166,6 +166,10 @@ router.route('/')
 
         if(state){
             filter.city = new RegExp(state, 'i');
+        }
+
+        if(search){
+            filter.barName = new RegExp(search,'i')
         }
 
         try {
