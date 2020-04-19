@@ -80,6 +80,11 @@ const barSchema = new Schema({
     date: {
         type: Date,
         default: Date.now
+    },
+
+    confirmed: {
+        type: Boolean,
+        default: false
     }
 });
 

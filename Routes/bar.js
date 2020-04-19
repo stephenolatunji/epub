@@ -7,7 +7,13 @@ const config = require('config');
 const multer = require("multer");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
-const {APP_URL} = require('../utils');
+const {APP_URL, smtpTransport} = require('../utils');
+
+
+// const confirmMail = `
+//     Thank you for joining for the Naija Bar Rescue Initiative, now your consumers will be able to see your bar on the platform and buy vouchers.
+//                             Follow <a href="${APP_URL}/pub/create-password?id=${bar._id}">this</a> link to sign in to your profile where you can see a list of vouchers purchased at your bar.
+// `
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -38,7 +44,7 @@ router.route('/')
     .post(
         parser.single('image'),
         async (req, res) => {
-
+            console.log(req.body)
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({errors: errors.array()})
@@ -98,16 +104,6 @@ router.route('/')
 
                 await user.save();
 
-                const smtpTransport = nodemailer.createTransport({
-                    host: process.env.SMTP_HOST,
-                    port: 465,
-                    secure: true,
-                    auth: {
-                        user: process.env.SMTP_USER,
-                        pass: process.env.SMTP_PASSWORD
-                    }
-                });
-
                 const mailOptions = {
                     to: bar.email,
                     from: process.env.SMTP_USER,
@@ -115,11 +111,8 @@ router.route('/')
                     html: `
                         <h1>Congrats you have successfully signed up</h1>
                         <h3>
-                            Thank you for joining for the Naija Bar Rescue Initiative, now your consumers will be able to see your bar on the platform and buy vouchers.
-                            Follow <a href="${APP_URL}/pub/create-password?id=${bar._id}">this</a> link to sign in to your profile where you can see a list of vouchers purchased at your bar.
-                        </h3>
-                        <h3>
-                            Your Bar ID is ${bar._id}
+                            Thank you for joining for the Naija Bar Rescue Initiative.
+                            Your details will be reviewed by our team and you will be contacted once validated.
                         </h3>
                         <h3>
                             For more information, please contact us - support@naijabarrescue.com or call 09062820138
@@ -140,6 +133,7 @@ router.route('/')
                 await BarOwner.deleteOne({email});
                 await Bar.deleteOne({email});
                 res.status(500).json({message: err + 'Error', success: false})
+                console.log(JSON.stringify(err));
             }
         })
 
