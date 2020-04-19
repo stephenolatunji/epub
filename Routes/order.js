@@ -207,7 +207,20 @@ router.route('/')
 
     router.get('/byOwner/:barId', async (req, res) => {
         try{
-            const vouchers = await Voucher.find({barId: req.params.barId}).populate('userId');
+            let vouchers = await Voucher.find({barId: req.params.barId}).populate('userId').lean();
+            vouchers = vouchers.map(({userId, isGuest,guestData, ...fields}) => {
+                if(isGuest){
+                    return {
+                        ...fields,
+                        user: guestData
+                    }
+                }else{
+                    return {
+                        ...fields,
+                        user: userId
+                    }
+                }
+            });
             res.json({
                 success: true,
                 vouchers
