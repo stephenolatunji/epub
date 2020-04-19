@@ -7,7 +7,7 @@ const config = require('config');
 const multer = require("multer");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
-
+const {APP_URL} = require('../utils');
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -25,7 +25,7 @@ const parser = multer({storage: storage});
 
 
 const Bar = require('../Models/Bar');
-const Token = require('../Models/Token');
+const BarOwner = require('../Models/BarOwner');
 
 
 router.route('/')
@@ -65,7 +65,7 @@ router.route('/')
 
 
             try {
-                const prevBar = await Bar.find({email});
+                const prevBar = await Bar.findOne({email});
 
                 if(prevBar){
                     return res.status(400).json({success: false, message: 'User already exists'})
@@ -89,10 +89,11 @@ router.route('/')
 
                 await bar.save();
 
-                const user = new Token({
+                const user = new BarOwner({
                     bar: bar._id,
                     firstName,
-                    lastName
+                    lastName,
+                    email
                 });
 
                 await user.save();
@@ -133,6 +134,8 @@ router.route('/')
                     });
                 });
             } catch (err) {
+                await BarOwner.deleteOne({email});
+                await Bar.deleteOne({email});
                 res.status(500).json({message: err + 'Error', success: false})
             }
         })

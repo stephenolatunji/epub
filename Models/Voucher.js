@@ -24,6 +24,10 @@ const voucherSchema = new Schema({
     total: {
         type: Number,
         required: true
+    },
+    date: {
+        type: Date,
+        default: Date.now()
     }
 });
 

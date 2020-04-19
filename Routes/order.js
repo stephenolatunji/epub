@@ -169,7 +169,7 @@ router.route('/')
 
             try{
 
-                const verifyVoucher = await Voucher.findById({_id: req.params._id});
+                const verifyVoucher = await Voucher.findById(req.params._id);
                 if(!verifyVoucher){
                     return res.status(404).json({message: 'Voucher does not exist'})
                 }else{
@@ -178,10 +178,33 @@ router.route('/')
                         message: 'Voucher found!'
                     });
                 }
-
             }catch(err){
                 res.status(500).json(err + 'Error')
             }
-        })
+        });
+
+    router.get('/byUser/:userId', async (req, res) => {
+        try{
+            const vouchers = await Voucher.find({userId: req.params.userId});
+            res.json({
+                success: true,
+                vouchers
+            })
+        }catch (e) {
+            res.status(500).json({success: false})
+        }
+    });
+
+    router.get('/byOwner/:barId', async (req, res) => {
+        try{
+            const vouchers = await Voucher.find({barId: req.params.barId}).populate('userId');
+            res.json({
+                success: true,
+                vouchers
+            })
+        }catch (e) {
+            res.status(500).json({success: false})
+        }
+    });
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const User = require('../Models/User');
+const BarOwner = require('../Models/BarOwner');
 
 module.exports = async function(req, res, next){
 
@@ -13,14 +14,25 @@ module.exports = async function(req, res, next){
     }
 
     try{
-        const confirmed = jwt.verify(token, config.get('jwtSecret'));
-        const user = await User.findById(confirmed.id);
-        if(user){
-            req.user = user;
-        }else{
-            throw new Error()
+        const payload = jwt.verify(token, config.get('jwtSecret'));
+        if(payload.barOwner){
+            const owner = await BarOwner.findById(payload.user.id);
+
+            if(owner){
+                req.user = owner;
+                next()
+            }else{
+                return res.status(401).json({message: 'Token not authorized'});
+            }
+        }else {
+            const user = await User.findById(payload.id);
+            if (user) {
+                req.user = user;
+            } else {
+                return res.status(401).json({message: 'Token not authorized'});
+            }
+            next();
         }
-        next();
     }
     catch(err){
         res.status(401).json({message: 'Invalid Token'});

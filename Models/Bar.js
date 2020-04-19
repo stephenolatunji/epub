@@ -68,7 +68,6 @@ const barSchema = new Schema({
 
     phone2: {
         type: Number,
-        required: true,
         trim: true,
     },
 
