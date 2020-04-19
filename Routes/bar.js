@@ -20,6 +20,7 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_KEY,
     api_secret: process.env.CLOUDNARY_SECRET
 });
+
 const storage = cloudinaryStorage({
     cloudinary: cloudinary,
     folder: "BAR",
@@ -151,7 +152,9 @@ router.route('/')
             limit: pageSize
         };
 
-        const filter = {};
+        const filter = {
+            confirmed: true
+        };
 
         if(sort && sort.slice(1) === 'name'){
             query.sort = { barName: sort.slice(0,1) === '+' ? 1 : -1 }
