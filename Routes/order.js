@@ -70,7 +70,7 @@ router.route('/')
 
             let total = await Total.findOne();
 
-            if(!total){
+            if (!total) {
                 //If by some freak accident the total isn't in the database
                 total = new Total();
                 await total.save()
@@ -78,7 +78,7 @@ router.route('/')
 
             const ordersTotal = vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0);
 
-            if(total.currentTotal + ordersTotal > 3450000){
+            if (total.currentTotal + ordersTotal > 3450000) {
                 return res.status(400).json({success: false, message: 'Orders have reached max total'})
             }
 
@@ -86,7 +86,7 @@ router.route('/')
                 return res.status(400).json({success: false, message: 'Orders should be more than 9000'})
             }
 
-            if(user.vouchersUsed >= 15){
+            if (user.vouchersUsed >= 15) {
                 return res.status(400).json({success: false, message: 'User has bought max vouchers'})
             }
 
@@ -199,7 +199,7 @@ router.route('/')
     });
 
 
-router.route('/verify/:_id')
+router.route('/use-voucher/:_id')
     .get(async (req, res) => {
 
         try {
@@ -207,7 +207,11 @@ router.route('/verify/:_id')
             const verifyVoucher = await Voucher.findById(req.params._id);
             if (!verifyVoucher) {
                 return res.status(404).json({message: 'Voucher does not exist', success: false})
+            } else if (verifyVoucher.used) {
+                return res.status(404).json({message: 'Voucher has been used', success: false})
             } else {
+                verifyVoucher.used = true;
+                await verifyVoucher.save();
                 return res.json({
                     success: true,
                     message: 'Voucher found!'

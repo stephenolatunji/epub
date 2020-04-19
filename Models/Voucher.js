@@ -45,6 +45,11 @@ const voucherSchema = new Schema({
             type: String,
             trim: true
         }
+    },
+
+    used: {
+        type: Boolean,
+        default: false
     }
 });
 
