@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const voucherSchema = new Schema({
+    _id: String,
+
     barId: {
         type: Schema.Types.ObjectId,
         required: true,

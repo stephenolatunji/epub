@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 const moment = require('moment');
 const path = require('path');
 const Email = require('email-templates');
+const randomize = require('randomatic');
 
 const Order = require('../Models/Order');
 const Voucher = require('../Models/Voucher');
@@ -90,6 +91,7 @@ router.post('/', async (req, res) => {
                         //If valid increase amount made
                         voucherBars[barId] = (voucherBars[barId] + price * quantity) || price * quantity;
                         return ({
+                            _id: randomize('Aa0', 8),
                             price,
                             quantity,
                             userId,
@@ -217,6 +219,7 @@ router.post('/', async (req, res) => {
             order
         })
     } catch (err) {
+        console.log(err);
         res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 
