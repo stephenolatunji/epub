@@ -85,7 +85,7 @@ router.post('/', async (req, res) => {
         if (ordersTotal > 9000) {
             return res.status(400).json({
                 success: false,
-                message: 'Orders should be more than 9000',
+                message: 'Orders should not be more than 9000',
                 code: responseCodes.ORDER_REACHED_LIMIT
             })
         }
