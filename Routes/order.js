@@ -13,7 +13,7 @@ const Total = require('../Models/Total');
 
 const {default: HTMLToPDF} = require('convert-html-to-pdf');
 
-const {htmlToPdf} = require('../utils');
+const {htmlToPdf, responseCodes} = require('../utils');
 
 const emailRender = new Email({
     juice: true,
@@ -75,15 +75,27 @@ router.post('/', async (req, res) => {
         const ordersTotal = vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0);
 
         if (total.currentTotal + ordersTotal > 3450000) {
-            return res.status(400).json({success: false, message: 'Orders have reached max total'})
+            return res.status(400).json({
+                success: false,
+                message: 'Orders have reached max total',
+                code: responseCodes.TOTAL_FULL
+            })
         }
 
         if (ordersTotal > 9000) {
-            return res.status(400).json({success: false, message: 'Orders should be more than 9000'})
+            return res.status(400).json({
+                success: false,
+                message: 'Orders should be more than 9000',
+                code: responseCodes.ORDER_REACHED_LIMIT
+            })
         }
 
         if (user.vouchersUsed >= 15) {
-            return res.status(400).json({success: false, message: 'User has bought max vouchers'})
+            return res.status(400).json({
+                success: false,
+                message: 'User has bought max vouchers',
+                code: responseCodes.VOUCHER_REACHED_LIMIT
+            })
         }
 
         const vouchersDb = await Voucher.create(vouchersMapped);
@@ -175,13 +187,10 @@ router.post('/', async (req, res) => {
             order
         })
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Error: ' + err
-        })
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 
-})
+});
 
 
 router.route('/use-voucher/:_id')
@@ -191,9 +200,9 @@ router.route('/use-voucher/:_id')
 
             const verifyVoucher = await Voucher.findById(req.params._id);
             if (!verifyVoucher) {
-                return res.status(404).json({message: 'Voucher does not exist', success: false})
+                return res.status(404).json({message: 'Voucher does not exist', success: false, code: responseCodes.VOUCHER_NOT_FOUND})
             } else if (verifyVoucher.used) {
-                return res.status(404).json({message: 'Voucher has been used', success: false})
+                return res.status(404).json({message: 'Voucher has been used', success: false, code: responseCodes.VOUCHER_USED})
             } else {
                 verifyVoucher.used = true;
                 await verifyVoucher.save();
@@ -203,7 +212,7 @@ router.route('/use-voucher/:_id')
                 });
             }
         } catch (err) {
-            res.status(500).json(err + 'Error')
+            res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
         }
     });
 
@@ -215,7 +224,7 @@ router.get('/byUser/:userId', auth(), async (req, res) => {
             vouchers
         })
     } catch (e) {
-        res.status(500).json({success: false})
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
 
@@ -261,7 +270,7 @@ router.get('/byOwner/:barId', auth(true), async (req, res) => {
             currentPage: page
         })
     } catch (e) {
-        res.status(500).json({success: false})
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
 

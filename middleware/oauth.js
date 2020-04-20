@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const User = require('../Models/User');
 const BarOwner = require('../Models/BarOwner');
+const {responseCodes} = require('../utils');
 
 module.exports = (pubRoute = false, adminRoute = false) => {
     return async function(req, res, next){
@@ -11,7 +12,7 @@ module.exports = (pubRoute = false, adminRoute = false) => {
 
         // Check token
         if(!token){
-            return res.status(401).json({message: 'Token not authorized'});
+            return res.status(401).json({message: 'Token not authorized', success: false, code: responseCodes.INVALID_TOKEN});
         }
 
         try{
@@ -19,12 +20,12 @@ module.exports = (pubRoute = false, adminRoute = false) => {
 
             //If the payload doesnt contain bar owner and it's a pub route then it's invalid
             if(pubRoute && !payload.barOwner){
-                return res.status(401).json({success: 'false', message: 'Invalid token'})
+                return res.status(401).json({message: 'Token not authorized', code: responseCodes.INVALID_TOKEN});
             }
 
             //If the payload doesnt contain is admin and it's an admin route then it's invalid
             if(adminRoute && !payload.isAdmin){
-                return res.status(401).json({success: 'false', message: 'Invalid token'})
+                return res.status(401).json({message: 'Token not authorized', code: responseCodes.INVALID_TOKEN});
             }
 
             if(payload.barOwner){
@@ -34,20 +35,20 @@ module.exports = (pubRoute = false, adminRoute = false) => {
                     req.user = owner;
                     next()
                 }else{
-                    return res.status(401).json({message: 'Token not authorized'});
+                    return res.status(401).json({message: 'Token not authorized', success: false, code: responseCodes.INVALID_TOKEN});
                 }
             }else {
                 const user = await User.findById(payload.id);
                 if (user) {
                     req.user = user;
                 } else {
-                    return res.status(401).json({message: 'Token not authorized'});
+                    return res.status(401).json({message: 'Token not authorized', code: responseCodes.INVALID_TOKEN});
                 }
                 next();
             }
         }
         catch(err){
-            res.status(401).json({message: 'Invalid Token'});
+            return res.status(401).json({message: 'Token not authorized', code: responseCodes.INVALID_TOKEN});
         }
     }
 };

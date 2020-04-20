@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const mongoose = require('mongoose');
-const {APP_URL, smtpTransport} = require('../utils');
+const {APP_URL, smtpTransport, responseCodes} = require('../utils');
 const moment = require('moment');
 const randomize = require('randomatic');
 const BarOwner = require('../Models/BarOwner');
@@ -20,7 +20,7 @@ router.route('/register')
 
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({errors: errors.array()})
+                return res.status(400).json({errors: errors.array(), code: responseCodes.INVALID_FIELDS})
             }
 
             try {
@@ -29,11 +29,11 @@ router.route('/register')
 
                 const owner = await BarOwner.findOne({bar: barId}).populate('bar');
                 if (!owner) {
-                    return res.status(400).json({message: 'User does not exist', success: false})
+                    return res.status(400).json({message: 'User does not exist', success: false, code: responseCodes.USER_NOT_FOUND})
                 }
 
                 if(!owner.bar.confirmed){
-                    return res.status(401).json({message: 'User not confirmed', success: false})
+                    return res.status(401).json({message: 'User not confirmed', success: false, code: responseCodes.USER_NOT_CONFIRMED})
                 }
 
                 const salt = await bcrypt.genSalt(10);
@@ -54,11 +54,13 @@ router.route('/register')
                 jwt.sign(payload, config.get('jwtSecret'), {
                     expiresIn: 3600
                 }, (err, token) => {
-                    if(err) throw err;
+                    if(err){
+                        return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+                    }
                     res.json({ token, owner: ownerObj, success: true });
                 });
             } catch (err) {
-                res.status(500).json({message: err + 'Error', success: false})
+                res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
             }
 
         });
@@ -72,7 +74,7 @@ router.route('/login')
 
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                res.status(400).json({errors: errors.array()});
+                res.status(400).json({errors: errors.array(), code: responseCodes.INVALID_FIELDS});
             }
 
             const {barId, password} = req.body;
@@ -87,17 +89,17 @@ router.route('/login')
                 }
 
                 if(!owner){
-                    return res.status(400).json({message: 'Invalid Credentials', success: false});
+                    return res.status(400).json({message: 'Invalid Credentials', success: false, code: responseCodes.USER_NOT_FOUND});
                 }
 
                 if(!owner.bar.confirmed){
-                    return res.status(401).json({message: 'User not confirmed', success: false})
+                    return res.status(401).json({message: 'User not confirmed', success: false, code: responseCodes.USER_NOT_CONFIRMED})
                 }
 
                 const isMatch = await bcrypt.compare(password, owner.password);
 
                 if (!isMatch) {
-                    return res.status(400).json({message: 'Invalid password', success: false});
+                    return res.status(400).json({message: 'Invalid password', success: false, code: responseCodes.INVALID_CREDENTIALS});
                 }
 
                 const ownerObj = owner.toObject();
@@ -113,12 +115,14 @@ router.route('/login')
                 jwt.sign(payload, config.get('jwtSecret'), {
                     expiresIn: 3600
                 }, (err, token) => {
-                    if(err) throw err;
+                    if(err){
+                        return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+                    }
                     res.json({ token, owner: ownerObj, success: true });
                 });
 
             } catch (err) {
-                res.status(500).json({message: err + 'Error', success: false})
+                res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
             }
         });
 
@@ -131,7 +135,8 @@ router.post('/reset-password', async (req, res) => {
         if (!owner) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found'
+                message: 'User not found',
+                code: responseCodes.USER_NOT_FOUND
             })
         }
 
@@ -170,8 +175,7 @@ router.post('/reset-password', async (req, res) => {
             });
         });
     } catch (e) {
-        console.log(e);
-        res.status(500).json({success: false})
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
 
@@ -184,7 +188,8 @@ router.post('/new-password', async (req,res) => {
         if (!owner) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found'
+                message: 'User not found',
+                code: responseCodes.USER_NOT_FOUND
             })
         }
 
@@ -193,7 +198,7 @@ router.post('/new-password', async (req,res) => {
             owner.reset.token === token &&
             moment().isBefore(moment(owner.reset.expiryDate))
         )){
-            return res.status(400).json({success: false})
+            return res.status(400).json({success: false, code: responseCodes.INVALID_RESET_TOKEN})
         }
 
 
@@ -206,8 +211,7 @@ router.post('/new-password', async (req,res) => {
             success: true
         })
     }catch (e) {
-        console.log(e);
-        res.status(500).json({success: false})
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
 

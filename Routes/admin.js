@@ -8,7 +8,7 @@ const Admin = require('../Models/Admin');
 const Bar = require('../Models/Bar');
 const BarOwner = require('../Models/BarOwner');
 
-const {smtpTransport, APP_URL} = require('../utils');
+const {smtpTransport, APP_URL, responseCodes} = require('../utils');
 
 router.post('/register', auth(null, true), async (req, res) => {
     const {email, password} = req.body;
@@ -17,7 +17,7 @@ router.post('/register', auth(null, true), async (req, res) => {
 
         const prevAdmin = await Admin.findOne({email});
         if (prevAdmin) {
-            return res.status(400).json({message: 'User already exists', success: false})
+            return res.status(400).json({message: 'User already exists', success: false, code: responseCodes.USER_ALREADY_EXISTS})
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -34,56 +34,71 @@ router.post('/register', auth(null, true), async (req, res) => {
         res.json({user: admin, success: true});
 
     } catch (err) {
-        res.status(500).json({message: err + 'Error', success: false})
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
 
 router.post('/login', auth(null, true), async (req, res) => {
-    const {email, password} = req.body;
+    try {
+        const {email, password} = req.body;
 
-    const admin = await Admin.findOne({email});
+        const admin = await Admin.findOne({email});
 
-    if (!admin) {
-        return res.status(404).json({success: false, message: 'admin not found'})
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: 'admin not found',
+                code: responseCodes.USER_NOT_FOUND
+            })
+        }
+
+        const isMatch = await bcrypt.compare(password, admin.password);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid details',
+                code: responseCodes.INVALID_CREDENTIALS
+            })
+        }
+
+        const payload = {
+            user: {
+                id: admin.id
+            },
+            isAdmin: true
+        };
+
+        jwt.sign(payload, config.get('jwtSecret'), {
+            expiresIn: 3600
+        }, (err, token) => {
+            if (err) {
+                return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+            }
+            res.json({token, admin, success: true});
+        });
+    }catch (e) {
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
-
-    const isMatch = await bcrypt.compare(password, admin.password);
-
-    if (!isMatch) {
-        return res.status(401).json({success: false, message: 'Invalid details'})
-    }
-
-    const payload = {
-        user: {
-            id: admin.id
-        },
-        isAdmin: true
-    };
-
-    jwt.sign(payload, config.get('jwtSecret'), {
-        expiresIn: 3600
-    }, (err, token) => {
-        if (err) throw err;
-        res.json({token, admin, success: true});
-    });
 });
 
 router.post('/toggle-confirm', auth(null, true), async (req, res) => {
-    const {barId, confirmed} = req.body;
+    try {
+        const {barId, confirmed} = req.body;
 
-    const bar = await Bar.findById(barId);
+        const bar = await Bar.findById(barId);
 
-    if (!bar) {
-        return res.status(404).json({success: false, message: 'Bar not found'})
-    }
+        if (!bar) {
+            return res.status(404).json({success: false, message: 'Bar not found', code: responseCodes.BAR_NOT_FOUND})
+        }
 
-    bar.confirmed = confirmed;
+        bar.confirmed = confirmed;
 
-    await bar.save();
+        await bar.save();
 
-    const barOwner = await BarOwner.findOne({bar: barId});
+        const barOwner = await BarOwner.findOne({bar: barId});
 
-    const confirmMessage = `
+        const confirmMessage = `
         <h1>
             Thank you for using for the Naija Bar Rescue Initiative. Your account has been activated. Now your consumers will be able to see your bar on the platform and buy vouchers.
         </h1>
@@ -92,7 +107,7 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
         </h3>
      `;
 
-    const reConfirmMessage = `
+        const reConfirmMessage = `
         <h1>
             Thank you for using for the Naija Bar Rescue Initiative. Your account has been re-activated. Now your consumers will be able to see your bar on the platform and buy vouchers.
         </h1>
@@ -101,7 +116,7 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
         </h3>
      `;
 
-    const disableMessage = `
+        const disableMessage = `
         <h1> 
             Your Naija Bar Rescue Initiative account has been de-activated .
         </h1>
@@ -110,28 +125,31 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
         </h3>
      `;
 
-    let email;
+        let email;
 
-    if (confirmed) {
-        //If the bar owner has a password then they've logged in before so send reconfirm mail else send confirm message
-        email = (barOwner && barOwner.password) ? reConfirmMessage : confirmMessage
-    } else {
-        email = disableMessage
-    }
-
-    const mailOptions = {
-        to: bar.email,
-        from: process.env.SMTP_USER,
-        subject: 'Bar Status',
-        html: email
-    };
-
-    smtpTransport.sendMail(mailOptions, function (err) {
-        if (err) {
-            return res.status(500).send({message: err.message, success: false});
+        if (confirmed) {
+            //If the bar owner has a password then they've logged in before so send reconfirm mail else send confirm message
+            email = (barOwner && barOwner.password) ? reConfirmMessage : confirmMessage
+        } else {
+            email = disableMessage
         }
-        res.json({success: true});
-    });
+
+        const mailOptions = {
+            to: bar.email,
+            from: process.env.SMTP_USER,
+            subject: 'Bar Status',
+            html: email
+        };
+
+        smtpTransport.sendMail(mailOptions, function (err) {
+            if (err) {
+                res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+            }
+            res.json({success: true});
+        });
+    }catch (e) {
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+    }
 });
 
 module.exports = router;

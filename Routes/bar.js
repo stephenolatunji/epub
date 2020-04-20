@@ -7,7 +7,7 @@ const config = require('config');
 const multer = require("multer");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
-const {APP_URL, smtpTransport} = require('../utils');
+const {responseCodes, smtpTransport} = require('../utils');
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -39,11 +39,6 @@ router.route('/')
     .post(
         parser.single('image'),
         async (req, res) => {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({errors: errors.array()})
-            }
-
             const image = {};
             image.url = req.file.url;
             image.id = req.file.public_id;
@@ -68,7 +63,7 @@ router.route('/')
                 const prevBar = await Bar.findOne({email});
 
                 if(prevBar){
-                    return res.status(400).json({success: false, message: 'User already exists'})
+                    return res.status(400).json({success: false, message: 'User already exists', code: responseCodes.USER_ALREADY_EXISTS})
                 }
 
                 const bar = new Bar({
@@ -116,7 +111,7 @@ router.route('/')
 
                 smtpTransport.sendMail(mailOptions, function (err) {
                     if (err) {
-                        return res.status(500).send({message: err.message, success: false});
+                        return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
                     }
                     res.status(200).json({
                         message: 'A verification email has been sent to ' + bar.email + '.',
@@ -126,8 +121,7 @@ router.route('/')
             } catch (err) {
                 await BarOwner.deleteOne({email});
                 await Bar.deleteOne({email});
-                res.status(500).json({message: err + 'Error', success: false})
-                console.log(JSON.stringify(err));
+                res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
             }
         })
 
@@ -174,7 +168,7 @@ router.route('/')
                 currentPage: page
             });
         } catch (err) {
-            res.status(500).json({success: false, message: err + 'Error'})
+            res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
         }
     });
 

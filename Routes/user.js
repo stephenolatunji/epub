@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const {check, validationResult} = require('express-validator');
 const randomize = require('randomatic');
-const {APP_URL, smtpTransport} = require('../utils');
+const {APP_URL, smtpTransport, responseCodes} = require('../utils');
 const moment = require('moment');
 
 const User = require('../Models/User');
@@ -27,7 +27,7 @@ router.post('/',
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            res.status(400).json({message: errors.array(), success: false});
+            res.status(400).json({message: errors.array(), success: false, code: responseCodes.INVALID_FIELDS});
 
         }
         const {firstname, lastname, email, password} = req.body;
@@ -36,7 +36,7 @@ router.post('/',
 
             let user = await User.findOne({email});
             if (user) {
-                return res.status(400).json({message: 'User already exists', success: false})
+                return res.status(400).json({message: 'User already exists', success: false, code: responseCodes.USER_ALREADY_EXISTS})
             }
 
             user = new User({
@@ -60,42 +60,53 @@ router.post('/',
             jwt.sign(payload, config.get('jwtSecret'), {
                 expiresIn: 3600
             }, (err, token) => {
-                if (err) throw err;
+                if (err){
+                    return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+                }
                 res.json({token, user, success: true});
             });
         } catch (err) {
-            res.status(500).json({message: err + 'Error', success: false})
+            res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
         }
-
-    })
+    });
 
 router.route('/login').post(async (req, res) => {
-    const {email, password} = req.body;
+    try {
+        const {email, password} = req.body;
 
-    const user = await User.findOne({email});
+        const user = await User.findOne({email});
 
-    if (!user) {
-        return res.status(404).json({success: false, message: 'User not found'})
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-        return res.status(401).json({success: false, message: 'Invalid details'})
-    }
-
-    const payload = {
-        user: {
-            id: user.id
+        if (!user) {
+            return res.status(404).json({success: false, message: 'User not found', code: responseCodes.USER_NOT_FOUND})
         }
-    };
 
-    jwt.sign(payload, config.get('jwtSecret'), {
-        expiresIn: 3600
-    }, (err, token) => {
-        if (err) throw err;
-        res.json({token, user, success: true});
-    });
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid details',
+                code: responseCodes.INVALID_CREDENTIALS
+            })
+        }
+
+        const payload = {
+            user: {
+                id: user.id
+            }
+        };
+
+        jwt.sign(payload, config.get('jwtSecret'), {
+            expiresIn: 3600
+        }, (err, token) => {
+            if (err) {
+                return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+            }
+            res.json({token, user, success: true});
+        });
+    }catch (e) {
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+    }
 });
 
 router.post('/reset-password', async (req, res) => {
@@ -107,7 +118,8 @@ router.post('/reset-password', async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found'
+                message: 'User not found',
+                code: responseCodes.USER_NOT_FOUND
             })
         }
 
@@ -138,7 +150,7 @@ router.post('/reset-password', async (req, res) => {
 
         smtpTransport.sendMail(mailOptions, (err) => {
             if (err) {
-                return res.status(500).send({message: err.message, success: false});
+                return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
             }
 
             res.json({
@@ -146,8 +158,7 @@ router.post('/reset-password', async (req, res) => {
             });
         });
     } catch (e) {
-        console.log(e);
-        res.status(500).json({success: false})
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
 
@@ -160,7 +171,8 @@ router.post('/new-password', async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found'
+                message: 'User not found',
+                code: responseCodes.USER_NOT_FOUND
             })
         }
 
@@ -169,7 +181,7 @@ router.post('/new-password', async (req, res) => {
             user.reset.token === token &&
             moment().isBefore(moment(user.reset.expiryDate))
         )) {
-            return res.status(400).json({success: false})
+            return res.status(400).json({success: false, code: responseCodes.INVALID_RESET_TOKEN})
         }
 
 
@@ -182,8 +194,7 @@ router.post('/new-password', async (req, res) => {
             success: true
         })
     } catch (e) {
-        console.log(e);
-        res.status(500).json({success: false})
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
 

@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const {check, validationResult} = require('express-validator');
-const auth = require('../middleware/oauth');
+const {responseCodes} = require('../utils');
 
 
 const User = require('../Models/User');
@@ -17,8 +17,7 @@ router.post('/',
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            res.status(400).json({errors: errors.array()});
-
+            res.status(400).json({errors: errors.array(), code: responseCodes.INVALID_FIELDS});
         }
 
         const {email, password} = req.body;
@@ -28,13 +27,13 @@ router.post('/',
             let user = await User.findOne({email});
 
             if (!user) {
-                return res.status(400).json({message: 'Invalid Credentials'});
+                return res.status(400).json({message: 'Invalid Credentials', code: responseCodes.USER_NOT_FOUND});
             }
 
             const isMatch = await bcrypt.compare(password, user.password);
 
             if (!isMatch) {
-                return res.status(400).json({message: 'Invalid Credentials'});
+                return res.status(400).json({message: 'Invalid Credentials', code: responseCodes.INVALID_CREDENTIALS});
             }
 
             const payload = {
@@ -46,13 +45,14 @@ router.post('/',
             jwt.sign(payload, config.get('jwtSecret'), {
                 expiresIn: 3600
             }, (err, token) => {
-                if (err) throw err;
+                if (err) {
+                    return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+                }
                 res.json({token});
             });
 
         } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server Error')
+            res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
         }
     })
 
