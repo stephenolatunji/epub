@@ -40,7 +40,7 @@ module.exports = {
 
         return pdf;
     },
-    APP_URL: 'https://naijabarrescue.netlify.app',
+    APP_URL: 'https://naijabarrescue.com',
     smtpTransport: nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: 465,

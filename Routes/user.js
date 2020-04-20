@@ -140,7 +140,7 @@ router.post('/reset-password', async (req, res) => {
             html: `
                     <h1>Password Reset</h1>
                     <h3>
-                        Follow <a href="${APP_URL}/pub/set-password?token=${token}">this</a> link to reset your password
+                        Follow <a href="${APP_URL}/pub/new-password?token=${token}">this</a> link to reset your password
                     </h3>
                     <h5>
                         It expires at ${moment().format('MMMM Do YYYY, h:mm:ss a')}
