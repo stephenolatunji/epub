@@ -185,7 +185,7 @@ router.post('/', async (req, res) => {
 
 
 router.route('/use-voucher/:_id')
-    .get(async (req, res) => {
+    .get(auth(true), async (req, res) => {
 
         try {
 
@@ -207,7 +207,7 @@ router.route('/use-voucher/:_id')
         }
     });
 
-router.get('/byUser/:userId', async (req, res) => {
+router.get('/byUser/:userId', auth(), async (req, res) => {
     try {
         const vouchers = await Voucher.find({userId: req.params.userId});
         res.json({
@@ -219,7 +219,7 @@ router.get('/byUser/:userId', async (req, res) => {
     }
 });
 
-router.get('/byOwner/:barId', async (req, res) => {
+router.get('/byOwner/:barId', auth(true), async (req, res) => {
     let {page = 1, pageSize = 10} = req.query;
 
     pageSize = Number(pageSize);

@@ -2,6 +2,7 @@ const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const config = require('config');
+const auth = require('../middleware/oauth');
 
 const Admin = require('../Models/Admin');
 const Bar = require('../Models/Bar');
@@ -9,7 +10,7 @@ const BarOwner = require('../Models/BarOwner');
 
 const {smtpTransport, APP_URL} = require('../utils');
 
-router.post('/register', async (req, res) => {
+router.post('/register', auth(null, true), async (req, res) => {
     const {email, password} = req.body;
 
     try {
@@ -37,7 +38,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', auth(null, true), async (req, res) => {
     const {email, password} = req.body;
 
     const admin = await Admin.findOne({email});
@@ -67,7 +68,7 @@ router.post('/login', async (req, res) => {
     });
 });
 
-router.post('/toggle-confirm', async (req, res) => {
+router.post('/toggle-confirm', auth(null, true), async (req, res) => {
     const {barId, confirmed} = req.body;
 
     const bar = await Bar.findById(barId);
