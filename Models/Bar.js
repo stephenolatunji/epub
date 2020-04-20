@@ -85,6 +85,11 @@ const barSchema = new Schema({
     confirmed: {
         type: Boolean,
         default: false
+    },
+
+    amountMade: {
+        type: Number,
+        default: 0
     }
 });
 

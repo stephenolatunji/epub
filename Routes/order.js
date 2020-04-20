@@ -45,24 +45,49 @@ router.post('/', async (req, res) => {
         const user = await User.findById(userId);
 
         let vouchersMapped;
+
+        const voucherBars = {};
+
         if (isGuest) {
-            vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
-                price,
-                quantity,
-                isGuest,
-                guestData,
-                barId,
-                total: quantity * price
-            }));
+            vouchersMapped = await Promise.all(
+                vouchers.map(async ({price, quantity, barId}) => {
+                    const bar = await Bar.findById(barId);
+                    if (bar && bar.amountMade < 500000) {
+                        //If valid increase amount made
+                        voucherBars[barId] = (voucherBars[barId] + price * quantity) || price * quantity;
+                        return ({
+                            price,
+                            quantity,
+                            isGuest,
+                            guestData,
+                            barId,
+                            total: quantity * price
+                        })
+                    }
+                    return null
+                })
+            );
         } else {
-            vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
-                price,
-                quantity,
-                userId,
-                barId,
-                total: quantity * price
-            }));
+            vouchersMapped = await Promise.all(
+                vouchers.map(async ({price, quantity, barId}) => {
+                    const bar = await Bar.findById(barId);
+                    if (bar && bar.amountMade < 500000) {
+                        //If valid increase amount made
+                        voucherBars[barId] = (voucherBars[barId] + price * quantity) || price * quantity;
+                        return ({
+                            price,
+                            quantity,
+                            userId,
+                            barId,
+                            total: quantity * price
+                        })
+                    }
+                    return null
+                })
+            );
         }
+
+        vouchersMapped = vouchersMapped.filter(voucher => voucher !== null);
 
         const ordersTotal = vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0);
 
@@ -82,13 +107,22 @@ router.post('/', async (req, res) => {
             })
         }
 
-        const vouchersDb = await Voucher.create(vouchersMapped);
+        let vouchersDb = await Voucher.create(vouchersMapped);
+        vouchersDb = vouchersDb || [];
 
         const order = await Order.create({
             userId,
             vouchers: vouchersDb,
             total: ordersTotal
         });
+
+        await Promise.all(
+            Object.entries(voucherBars)
+                .map(([barId, amountMade]) => {
+                        return Bar.updateOne({_id: barId}, {amountMade})
+                    }
+                )
+        );
 
         const smtpTransport = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
@@ -181,9 +215,17 @@ router.route('/use-voucher/:_id')
 
             const verifyVoucher = await Voucher.findById(req.params._id);
             if (!verifyVoucher) {
-                return res.status(404).json({message: 'Voucher does not exist', success: false, code: responseCodes.VOUCHER_NOT_FOUND})
+                return res.status(404).json({
+                    message: 'Voucher does not exist',
+                    success: false,
+                    code: responseCodes.VOUCHER_NOT_FOUND
+                })
             } else if (verifyVoucher.used) {
-                return res.status(404).json({message: 'Voucher has been used', success: false, code: responseCodes.VOUCHER_USED})
+                return res.status(404).json({
+                    message: 'Voucher has been used',
+                    success: false,
+                    code: responseCodes.VOUCHER_USED
+                })
             } else {
                 verifyVoucher.used = true;
                 await verifyVoucher.save();
