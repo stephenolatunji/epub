@@ -5,6 +5,9 @@ const config = require('config');
 
 const Admin = require('../Models/Admin');
 const Bar = require('../Models/Bar');
+const BarOwner = require('../Models/BarOwner');
+
+const {smtpTransport, APP_URL} = require('../utils');
 
 router.post('/register', async (req, res) => {
     const {email, password} = req.body;
@@ -65,11 +68,11 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/toggle-confirm', async (req, res) => {
-    const {barId,confirmed} = req.body;
+    const {barId, confirmed} = req.body;
 
     const bar = await Bar.findById(barId);
 
-    if(!bar){
+    if (!bar) {
         return res.status(404).json({success: false, message: 'Bar not found'})
     }
 
@@ -77,7 +80,57 @@ router.post('/toggle-confirm', async (req, res) => {
 
     await bar.save();
 
-    res.json({success: true})
+    const barOwner = await BarOwner.findOne({bar: barId});
+
+    const confirmMessage = `
+        <h1>
+            Thank you for using for the Naija Bar Rescue Initiative. Your account has been activated. Now your consumers will be able to see your bar on the platform and buy vouchers.
+        </h1>
+        <h3>
+         Follow <a href="${APP_URL}/pub/create-password?id=${bar._id}">this</a> link to sign in to your profile where you can see a list of vouchers purchased at your bar.
+        </h3>
+     `;
+
+    const reConfirmMessage = `
+        <h1>
+            Thank you for using for the Naija Bar Rescue Initiative. Your account has been re-activated. Now your consumers will be able to see your bar on the platform and buy vouchers.
+        </h1>
+        <h3>
+         You can proceed to the <a href="${APP_URL}/pub/login">login</a> page to view your dashboard
+        </h3>
+     `;
+
+    const disableMessage = `
+        <h1> 
+            Your Naija Bar Rescue Initiative account has been de-activated .
+        </h1>
+        <h3>
+            Kindly contact us at support@naijabarrescue.com or call 09062820138 to get more details on how to reactivate your account.
+        </h3>
+     `;
+
+    let email;
+
+    if (confirmed) {
+        //If the bar owner has a password then they've logged in before so send reconfirm mail else send confirm message
+        email = (barOwner && barOwner.password) ? reConfirmMessage : confirmMessage
+    } else {
+        email = disableMessage
+    }
+
+    const mailOptions = {
+        to: bar.email,
+        from: process.env.SMTP_USER,
+        subject: 'Bar Status',
+        html: email
+    };
+
+    smtpTransport.sendMail(mailOptions, function (err) {
+        if (err) {
+            return res.status(500).send({message: err.message, success: false});
+        }
+        res.json({success: true});
+    });
 });
 
-module.exports = router
+module.exports = router;
