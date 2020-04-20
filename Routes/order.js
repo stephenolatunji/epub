@@ -90,7 +90,7 @@ router.post('/', async (req, res) => {
             })
         }
 
-        if (user.vouchersUsed >= 15) {
+        if (!isGuest && user.vouchersUsed >= 15) {
             return res.status(400).json({
                 success: false,
                 message: 'User has bought max vouchers',
