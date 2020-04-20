@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/oauth');
 const nodemailer = require('nodemailer');
+const moment = require('moment');
 const path = require('path');
 const Email = require('email-templates');
 
@@ -48,6 +49,9 @@ router.post('/', async (req, res) => {
 
         const voucherBars = {};
 
+        const today = moment().endOf('day');
+        const lastWeek = moment().subtract(7,'d');
+
         if (isGuest) {
             vouchersMapped = await Promise.all(
                 vouchers.map(async ({price, quantity, barId}) => {
@@ -68,6 +72,17 @@ router.post('/', async (req, res) => {
                 })
             );
         } else {
+            const prevOrders = await Order.countDocuments({
+                date: {
+                    $gte: lastWeek,
+                    $lte: today
+                }
+            });
+
+            if(prevOrders >= 2){
+                return res.status(400).json({success: false, code: responseCodes.MAX_ORDERS_FOR_WEEK})
+            }
+
             vouchersMapped = await Promise.all(
                 vouchers.map(async ({price, quantity, barId}) => {
                     const bar = await Bar.findById(barId);
