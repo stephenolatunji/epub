@@ -27,8 +27,8 @@ const barSchema = new Schema({
 
     bvn: {
         type: Number,
-        required: true,
-        trim: true,
+        // required: true,
+        trim: true
     },
 
     accountName: {
