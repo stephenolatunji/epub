@@ -64,23 +64,7 @@ router.post('/', async (req, res) => {
             }));
         }
 
-        let total = await Total.findOne();
-
-        if (!total) {
-            //If by some freak accident the total isn't in the database
-            total = new Total();
-            await total.save()
-        }
-
         const ordersTotal = vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0);
-
-        if (total.currentTotal + ordersTotal > 3450000) {
-            return res.status(400).json({
-                success: false,
-                message: 'Orders have reached max total',
-                code: responseCodes.TOTAL_FULL
-            })
-        }
 
         if (ordersTotal > 9000) {
             return res.status(400).json({
@@ -105,9 +89,6 @@ router.post('/', async (req, res) => {
             vouchers: vouchersDb,
             total: ordersTotal
         });
-
-        total.currentTotal += ordersTotal;
-        await total.save();
 
         const smtpTransport = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
