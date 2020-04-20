@@ -91,7 +91,7 @@ router.post('/', async (req, res) => {
 
         const ordersTotal = vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0);
 
-        if (ordersTotal > 9000) {
+        if (ordersTotal > 45000) {
             return res.status(400).json({
                 success: false,
                 message: 'Orders should be more than 9000',
