@@ -235,8 +235,27 @@ router.get('/byUser/:userId', async (req, res) => {
 });
 
 router.get('/byOwner/:barId', async (req, res) => {
+    let {page = 1, pageSize = 10} = req.query;
+
+    pageSize = Number(pageSize);
+    page = Number(page);
+
     try {
-        let vouchers = await Voucher.find({barId: req.params.barId}).populate('userId').lean();
+        let vouchers = await Voucher.find(
+            {
+                barId: req.params.barId
+            },
+            null,
+            {
+                skip: (page - 1) * pageSize,
+                limit: pageSize
+            }
+        ).populate('userId').lean();
+
+        const count = await Voucher.countDocuments({
+            barId: req.params.barId
+        });
+
         vouchers = vouchers.map(({userId, isGuest, guestData, ...fields}) => {
             if (isGuest) {
                 return {
@@ -252,7 +271,9 @@ router.get('/byOwner/:barId', async (req, res) => {
         });
         res.json({
             success: true,
-            vouchers
+            vouchers,
+            totalPages: Math.ceil(count / pageSize),
+            currentPage: page
         })
     } catch (e) {
         res.status(500).json({success: false})
