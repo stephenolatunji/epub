@@ -30,173 +30,158 @@ const getVoucherHTML = (options) => {
 };
 
 
-router.route('/')
+// @route       POST/User
+// @desc        Make new order
+// access       Private
+
+router.post('/', async (req, res) => {
+
+    const {reference, userId, vouchers, isGuest = false, guestData} = req.body;
+
+    //Verify reference using https://api.paystack.co/transaction/verify/refId
 
 
-    // @route       POST/User
-    // @desc        Make new order
-    // access       Private
+    try {
+        const user = await User.findById(userId);
 
-    // .post(auth, async (req, res) => {
-    .post(async (req, res) => {
-
-        const {reference, userId, vouchers, isGuest = false, guestData} = req.body;
-
-        //Verify reference using https://api.paystack.co/transaction/verify/refId
-
-
-        try {
-            const user = await User.findById(userId);
-
-            let vouchersMapped;
-            if (isGuest) {
-                vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
-                    price,
-                    quantity,
-                    isGuest,
-                    guestData,
-                    barId,
-                    total: quantity * price
-                }));
-            } else {
-                vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
-                    price,
-                    quantity,
-                    userId,
-                    barId,
-                    total: quantity * price
-                }));
-            }
-
-            let total = await Total.findOne();
-
-            if (!total) {
-                //If by some freak accident the total isn't in the database
-                total = new Total();
-                await total.save()
-            }
-
-            const ordersTotal = vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0);
-
-            if (total.currentTotal + ordersTotal > 3450000) {
-                return res.status(400).json({success: false, message: 'Orders have reached max total'})
-            }
-
-            if (ordersTotal > 9000) {
-                return res.status(400).json({success: false, message: 'Orders should be more than 9000'})
-            }
-
-            if (user.vouchersUsed >= 15) {
-                return res.status(400).json({success: false, message: 'User has bought max vouchers'})
-            }
-
-            const vouchersDb = await Voucher.create(vouchersMapped);
-
-            const order = await Order.create({
+        let vouchersMapped;
+        if (isGuest) {
+            vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
+                price,
+                quantity,
+                isGuest,
+                guestData,
+                barId,
+                total: quantity * price
+            }));
+        } else {
+            vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
+                price,
+                quantity,
                 userId,
-                vouchers: vouchersDb,
-                total: ordersTotal
-            });
-
-            total.currentTotal += ordersTotal;
-            await total.save();
-
-            const smtpTransport = nodemailer.createTransport({
-                host: process.env.SMTP_HOST,
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.SMTP_USER,
-                    pass: process.env.SMTP_PASSWORD
-                }
-            });
-
-            const vouchersMail = await Promise.all(
-                vouchers.map(async ({quantity, price, barId}) => {
-                    const bar = await Bar.findById(barId);
-                    return {
-                        title: `${bar.barName} x ${quantity}`,
-                        price,
-                        image: bar.image
-                    }
-                })
-            );
-
-
-            //TODO: Refractor to prevent fetching bar twice
-            const attachments = await Promise.all(
-                vouchersDb.map(async ({quantity, price, barId, _id}) => {
-                    const bar = await Bar.findById(barId);
-                    const voucherHTML = await getVoucherHTML({
-                        price: `${price} x ${quantity}`,
-                        address: bar.address,
-                        name: bar.barName,
-                        id: _id
-                    });
-                    const pdf = await htmlToPdf(voucherHTML);
-                    return {
-                        content: pdf,
-                        contentType: 'application/pdf',
-                        contentDisposition: 'attachment',
-                        fileName: `${bar.barName} * ${quantity}.pdf`
-                    };
-                })
-            );
-
-            const mailOptions = {
-                to: isGuest ? guestData.email : user.email,
-                from: process.env.SMTP_USER,
-                subject: 'Bought Vouchers!',
-                attachments
-            };
-
-
-            const email = new Email({
-                juice: true,
-                juiceResources: {
-                    preserveImportant: true,
-                    webResources: {
-                        relativeTo: path.resolve('emails')
-                    }
-                },
-                transport: smtpTransport,
-                //Uncomment this line to make it send mails in development
-                // send: true
-            });
-
-            await email.send({
-                message: mailOptions,
-                template: 'order',
-                locals: {
-                    orderId: `#${order._id}`.toUpperCase(),
-                    vouchers: vouchersMail
-                }
-            });
-
-
-            res.json({
-                success: true,
-                order
-            })
-        } catch (err) {
-            res.status(500).json({
-                success: false,
-                message: 'Error: ' + err
-            })
+                barId,
+                total: quantity * price
+            }));
         }
 
-    })
+        let total = await Total.findOne();
 
-    .get(auth, async (req, res) => {
-
-        try {
-
-            const order = await Order.find({user: req.user.id});
-            res.json(order)
-        } catch (err) {
-            res.status(500).json(err + 'Error')
+        if (!total) {
+            //If by some freak accident the total isn't in the database
+            total = new Total();
+            await total.save()
         }
-    });
+
+        const ordersTotal = vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0);
+
+        if (total.currentTotal + ordersTotal > 3450000) {
+            return res.status(400).json({success: false, message: 'Orders have reached max total'})
+        }
+
+        if (ordersTotal > 9000) {
+            return res.status(400).json({success: false, message: 'Orders should be more than 9000'})
+        }
+
+        if (user.vouchersUsed >= 15) {
+            return res.status(400).json({success: false, message: 'User has bought max vouchers'})
+        }
+
+        const vouchersDb = await Voucher.create(vouchersMapped);
+
+        const order = await Order.create({
+            userId,
+            vouchers: vouchersDb,
+            total: ordersTotal
+        });
+
+        total.currentTotal += ordersTotal;
+        await total.save();
+
+        const smtpTransport = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASSWORD
+            }
+        });
+
+        const vouchersMail = await Promise.all(
+            vouchers.map(async ({quantity, price, barId}) => {
+                const bar = await Bar.findById(barId);
+                return {
+                    title: `${bar.barName} x ${quantity}`,
+                    price,
+                    image: bar.image
+                }
+            })
+        );
+
+
+        //TODO: Refractor to prevent fetching bar twice
+        const attachments = await Promise.all(
+            vouchersDb.map(async ({quantity, price, barId, _id}) => {
+                const bar = await Bar.findById(barId);
+                const voucherHTML = await getVoucherHTML({
+                    price: `${price} x ${quantity}`,
+                    address: bar.address,
+                    name: bar.barName,
+                    id: _id
+                });
+                const pdf = await htmlToPdf(voucherHTML);
+                return {
+                    content: pdf,
+                    contentType: 'application/pdf',
+                    contentDisposition: 'attachment',
+                    fileName: `${bar.barName} * ${quantity}.pdf`
+                };
+            })
+        );
+
+        const mailOptions = {
+            to: isGuest ? guestData.email : user.email,
+            from: process.env.SMTP_USER,
+            subject: 'Bought Vouchers!',
+            attachments
+        };
+
+
+        const email = new Email({
+            juice: true,
+            juiceResources: {
+                preserveImportant: true,
+                webResources: {
+                    relativeTo: path.resolve('emails')
+                }
+            },
+            transport: smtpTransport,
+            //Uncomment this line to make it send mails in development
+            // send: true
+        });
+
+        await email.send({
+            message: mailOptions,
+            template: 'order',
+            locals: {
+                orderId: `#${order._id}`.toUpperCase(),
+                vouchers: vouchersMail
+            }
+        });
+
+
+        res.json({
+            success: true,
+            order
+        })
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: 'Error: ' + err
+        })
+    }
+
+})
 
 
 router.route('/use-voucher/:_id')
