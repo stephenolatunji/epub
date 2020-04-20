@@ -10,7 +10,7 @@ const BarOwner = require('../Models/BarOwner');
 
 const {smtpTransport, APP_URL, responseCodes} = require('../utils');
 
-router.post('/register', auth(null, true), async (req, res) => {
+router.post('/register', async (req, res) => {
     const {email, password} = req.body;
 
     try {
@@ -38,7 +38,7 @@ router.post('/register', auth(null, true), async (req, res) => {
     }
 });
 
-router.post('/login', auth(null, true), async (req, res) => {
+router.post('/login', async (req, res) => {
     try {
         const {email, password} = req.body;
 
