@@ -130,7 +130,7 @@ router.route('/')
     // @desc        Fetch all bars
     // access       Public
     .get(async (req, res) => {
-        let { page = 1, sort = null, state = null, pageSize = 8, search = null } = req.query;
+        let { page = 1, sort = null, state = null, pageSize = 8, search = null, returnConfirmed = true } = req.query;
 
         pageSize = Number(pageSize);
         page = Number(page);
@@ -140,9 +140,11 @@ router.route('/')
             limit: pageSize
         };
 
-        const filter = {
-            confirmed: true
-        };
+        const filter = {};
+
+        if(returnConfirmed !== 'false'){
+            filter.confirmed = true;
+        }
 
         if(sort && sort.slice(1) === 'name'){
             query.sort = { barName: sort.slice(0,1) === '+' ? 1 : -1 }
