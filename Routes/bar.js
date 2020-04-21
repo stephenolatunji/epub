@@ -8,7 +8,6 @@ const multer = require("multer");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
 const {responseCodes, smtpTransport} = require('../utils');
-const logo = require('../assets/bar.png');
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
