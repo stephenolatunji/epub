@@ -103,7 +103,7 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
             Thank you for using for the Naija Bar Rescue Initiative. Your account has been activated. Now your consumers will be able to see your bar on the platform and buy vouchers.
         </h1>
         <h3>
-         Follow <a href="${APP_URL}/pub/create-password?id=${bar._id}">this</a> link to sign in to your profile where you can see a list of vouchers purchased at your bar.
+         Follow <a href="${APP_URL}/bar/create-password?id=${bar._id}">this</a> link to sign in to your profile where you can see a list of vouchers purchased at your bar.
         </h3>
      `;
 
@@ -112,7 +112,7 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
             Thank you for using for the Naija Bar Rescue Initiative. Your account has been re-activated. Now your consumers will be able to see your bar on the platform and buy vouchers.
         </h1>
         <h3>
-         You can proceed to the <a href="${APP_URL}/pub/login">login</a> page to view your dashboard
+         You can proceed to the <a href="${APP_URL}/bar/login">login</a> page to view your dashboard
         </h3>
      `;
 

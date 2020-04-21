@@ -16,7 +16,8 @@ const responseCodes = {
     ORDER_REACHED_LIMIT: 'ORDER_REACHED_LIMIT',
     VOUCHER_REACHED_LIMIT: 'VOUCHER_REACHED_LIMIT',
     VOUCHER_NOT_FOUND: 'VOUCHER_NOT_FOUND',
-    VOUCHER_USED: 'VOUCHER_USED'
+    VOUCHER_USED: 'VOUCHER_USED',
+    MAX_ORDERS_FOR_WEEK: 'MAX_ORDERS_FOR_WEEK'
 };
 
 module.exports = {
@@ -39,7 +40,7 @@ module.exports = {
 
         return pdf;
     },
-    APP_URL: 'https://naijabarrescue.netlify.app',
+    APP_URL: 'https://naijabarrescue.com',
     smtpTransport: nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: 465,

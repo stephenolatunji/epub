@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/oauth');
 const nodemailer = require('nodemailer');
+const moment = require('moment');
 const path = require('path');
 const Email = require('email-templates');
+const randomize = require('randomatic');
 
 const Order = require('../Models/Order');
 const Voucher = require('../Models/Voucher');
@@ -45,44 +47,69 @@ router.post('/', async (req, res) => {
         const user = await User.findById(userId);
 
         let vouchersMapped;
+
+        const voucherBars = {};
+
+        const today = moment().endOf('day');
+        const lastWeek = moment().subtract(7,'d');
+
         if (isGuest) {
-            vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
-                price,
-                quantity,
-                isGuest,
-                guestData,
-                barId,
-                total: quantity * price
-            }));
+            vouchersMapped = await Promise.all(
+                vouchers.map(async ({price, quantity, barId}) => {
+                    const bar = await Bar.findById(barId);
+                    if (bar && bar.amountMade < 500000) {
+                        //If valid increase amount made
+                        voucherBars[barId] = (voucherBars[barId] + price * quantity) || price * quantity;
+                        return ({
+							_id: randomize('Aa0', 8),
+                            price,
+                            quantity,
+                            isGuest,
+                            guestData,
+                            barId,
+                            total: quantity * price
+                        })
+                    }
+                    return null
+                })
+            );
         } else {
-            vouchersMapped = vouchers.map(({price, quantity, barId}) => ({
-                price,
-                quantity,
-                userId,
-                barId,
-                total: quantity * price
-            }));
+            const prevOrders = await Order.countDocuments({
+                date: {
+                    $gte: lastWeek,
+                    $lte: today
+                }
+            });
+
+            if(prevOrders >= 2){
+                return res.status(400).json({success: false, code: responseCodes.MAX_ORDERS_FOR_WEEK})
+            }
+
+            vouchersMapped = await Promise.all(
+                vouchers.map(async ({price, quantity, barId}) => {
+                    const bar = await Bar.findById(barId);
+                    if (bar && bar.amountMade < 500000) {
+                        //If valid increase amount made
+                        voucherBars[barId] = (voucherBars[barId] + price * quantity) || price * quantity;
+                        return ({
+                            _id: randomize('Aa0', 8),
+                            price,
+                            quantity,
+                            userId,
+                            barId,
+                            total: quantity * price
+                        })
+                    }
+                    return null
+                })
+            );
         }
 
-        let total = await Total.findOne();
-
-        if (!total) {
-            //If by some freak accident the total isn't in the database
-            total = new Total();
-            await total.save()
-        }
+        vouchersMapped = vouchersMapped.filter(voucher => voucher !== null);
 
         const ordersTotal = vouchersMapped.reduce((currentTotal, {total}) => currentTotal + total, 0);
 
-        if (total.currentTotal + ordersTotal > 3450000) {
-            return res.status(400).json({
-                success: false,
-                message: 'Orders have reached max total',
-                code: responseCodes.TOTAL_FULL
-            })
-        }
-
-        if (ordersTotal > 9000) {
+        if (ordersTotal > 45000) {
             return res.status(400).json({
                 success: false,
                 message: 'Orders should not be more than 9000',
@@ -90,7 +117,7 @@ router.post('/', async (req, res) => {
             })
         }
 
-        if (user.vouchersUsed >= 15) {
+        if (!isGuest && user.vouchersUsed >= 15) {
             return res.status(400).json({
                 success: false,
                 message: 'User has bought max vouchers',
@@ -98,7 +125,8 @@ router.post('/', async (req, res) => {
             })
         }
 
-        const vouchersDb = await Voucher.create(vouchersMapped);
+        let vouchersDb = await Voucher.create(vouchersMapped);
+        vouchersDb = vouchersDb || [];
 
         const order = await Order.create({
             userId,
@@ -106,8 +134,13 @@ router.post('/', async (req, res) => {
             total: ordersTotal
         });
 
-        total.currentTotal += ordersTotal;
-        await total.save();
+        await Promise.all(
+            Object.entries(voucherBars)
+                .map(([barId, amountMade]) => {
+                        return Bar.updateOne({_id: barId}, {amountMade})
+                    }
+                )
+        );
 
         const smtpTransport = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
@@ -187,6 +220,7 @@ router.post('/', async (req, res) => {
             order
         })
     } catch (err) {
+        console.log(err);
         res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 
@@ -200,9 +234,17 @@ router.route('/use-voucher/:_id')
 
             const verifyVoucher = await Voucher.findById(req.params._id);
             if (!verifyVoucher) {
-                return res.status(404).json({message: 'Voucher does not exist', success: false, code: responseCodes.VOUCHER_NOT_FOUND})
+                return res.status(404).json({
+                    message: 'Voucher does not exist',
+                    success: false,
+                    code: responseCodes.VOUCHER_NOT_FOUND
+                })
             } else if (verifyVoucher.used) {
-                return res.status(404).json({message: 'Voucher has been used', success: false, code: responseCodes.VOUCHER_USED})
+                return res.status(404).json({
+                    message: 'Voucher has been used',
+                    success: false,
+                    code: responseCodes.VOUCHER_USED
+                })
             } else {
                 verifyVoucher.used = true;
                 await verifyVoucher.save();
