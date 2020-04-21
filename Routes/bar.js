@@ -8,6 +8,7 @@ const multer = require("multer");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
 const {responseCodes, smtpTransport} = require('../utils');
+const logo = require('../assets/bar.png');
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -99,6 +100,7 @@ router.route('/')
                     subject: 'Your Bar ID',
                     html: `
                         <h1>Congrats you have successfully signed up</h1>
+                        <img src= {logo} alt= 'Naija bar rescue Logo' ></img>                      
                         <h3>
                             Thank you for joining for the Naija Bar Rescue Initiative.
                             Your details will be reviewed by our team and you will be contacted once validated.
