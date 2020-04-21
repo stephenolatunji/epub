@@ -61,6 +61,7 @@ router.post('/', async (req, res) => {
                         //If valid increase amount made
                         voucherBars[barId] = (voucherBars[barId] + price * quantity) || price * quantity;
                         return ({
+							_id: randomize('Aa0', 8),
                             price,
                             quantity,
                             isGuest,
