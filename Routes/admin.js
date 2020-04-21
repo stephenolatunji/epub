@@ -99,6 +99,7 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
         const barOwner = await BarOwner.findOne({bar: barId});
 
         const confirmMessage = `
+        <img style="display: block; margin-bottom: 20px" src="https://res.cloudinary.com/dpgdjfckl/image/upload/v1587481918/BAR/bar_lxlwze.png" alt="Logo" class="logo">
         <h1>
             Thank you for using for the Naija Bar Rescue Initiative. Your account has been activated. Now your consumers will be able to see your bar on the platform and buy vouchers.
         </h1>
@@ -108,6 +109,7 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
      `;
 
         const reConfirmMessage = `
+        <img style="display: block; margin-bottom: 20px" src="https://res.cloudinary.com/dpgdjfckl/image/upload/v1587481918/BAR/bar_lxlwze.png" alt="Logo" class="logo">
         <h1>
             Thank you for using for the Naija Bar Rescue Initiative. Your account has been re-activated. Now your consumers will be able to see your bar on the platform and buy vouchers.
         </h1>
@@ -117,6 +119,7 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
      `;
 
         const disableMessage = `
+        <img style="display: block; margin-bottom: 20px" src="https://res.cloudinary.com/dpgdjfckl/image/upload/v1587481918/BAR/bar_lxlwze.png" alt="Logo" class="logo">
         <h1> 
             Your Naija Bar Rescue Initiative account has been de-activated .
         </h1>

@@ -99,8 +99,8 @@ router.route('/')
                     from: process.env.SMTP_USER,
                     subject: 'Your Bar ID',
                     html: `
-                        <h1>Congrats you have successfully signed up</h1>
-                        <img src="https://res.cloudinary.com/dpgdjfckl/image/upload/v1587481918/BAR/bar_lxlwze.png" alt="Logo" class="logo">                      
+                        <img style="display: block; margin-bottom: 20px" src="https://res.cloudinary.com/dpgdjfckl/image/upload/v1587481918/BAR/bar_lxlwze.png" alt="Logo" class="logo">
+                        <h1>Congrats you have successfully signed up</h1>                      
                         <h3>
                             Thank you for joining for the Naija Bar Rescue Initiative.
                             Your details will be reviewed by our team and you will be contacted once validated.
