@@ -78,7 +78,8 @@ router.post('/', async (req, res) => {
                 date: {
                     $gte: lastWeek,
                     $lte: today
-                }
+                },
+                userId
             });
 
             if(prevOrders >= 2){
@@ -147,8 +148,8 @@ router.post('/', async (req, res) => {
             port: 465,
             secure: true,
             auth: {
-                user: process.env.SMTP_CUSTOMER_USER,
-                pass: process.env.SMTP_CUSTOMER_PASSWORD
+                user: process.env.SMTP_CONSUMER_USER,
+                pass: process.env.SMTP_CONSUMER_PASSWORD
             }
         });
 
@@ -186,7 +187,7 @@ router.post('/', async (req, res) => {
 
         const mailOptions = {
             to: isGuest ? guestData.email : user.email,
-            from: process.env.SMTP_CUSTOMER_USER,
+            from: process.env.SMTP_CONSUMER_USER,
             subject: 'Bought Vouchers!',
             attachments
         };
