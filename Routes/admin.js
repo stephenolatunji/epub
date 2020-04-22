@@ -124,7 +124,7 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
             Your Naija Bar Rescue Initiative account has been de-activated .
         </h1>
         <h3>
-            Kindly contact us at support@naijabarrescue.com or call 09062820138 to get more details on how to reactivate your account.
+            Kindly contact us at support@naijabarrescue.com or call 09062829447 to get more details on how to reactivate your account.
         </h3>
      `;
 
