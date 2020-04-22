@@ -96,16 +96,16 @@ router.route('/')
                 const mailOptions = {
                     to: bar.email,
                     from: process.env.SMTP_USER,
-                    subject: 'Your Bar ID',
+                    subject: 'Congrats! You have successfully signed up',
                     html: `
                         <img style="display: block; margin-bottom: 20px" src="https://res.cloudinary.com/dpgdjfckl/image/upload/v1587481918/BAR/bar_lxlwze.png" alt="Logo" class="logo">
                         <h1>Congrats you have successfully signed up</h1>                      
                         <h3>
-                            Thank you for joining for the Naija Bar Rescue Initiative.
+                            Thank you for joining the Naija Bar Rescue Initiative.
                             Your details will be reviewed by our team and you will be contacted once validated.
                         </h3>
                         <h3>
-                            For more information, please contact us - support@naijabarrescue.com or call 09062820138
+                            For more information, please contact us - support@naijabarrescue.com or call 09062829447
                         </h3>
                     `
                 };
