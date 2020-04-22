@@ -146,7 +146,7 @@ router.post('/toggle-confirm', auth(null, true), async (req, res) => {
 
         smtpTransport.sendMail(mailOptions, function (err) {
             if (err) {
-                res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+                return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
             }
             res.json({success: true});
         });
