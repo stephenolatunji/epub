@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const nodemailer = require('nodemailer');
+const randomize = require('randomatic');
 
 const responseCodes = {
     SERVER_ERROR: 'SERVER_ERROR',
@@ -15,6 +16,7 @@ const responseCodes = {
     TOTAL_FULL: 'TOTAL_FULL',
     ORDER_REACHED_LIMIT: 'ORDER_REACHED_LIMIT',
     VOUCHER_REACHED_LIMIT: 'VOUCHER_REACHED_LIMIT',
+    BAR_REACHED_LIMIT: 'BAR_REACHED_LIMIT',
     VOUCHER_NOT_FOUND: 'VOUCHER_NOT_FOUND',
     VOUCHER_USED: 'VOUCHER_USED',
     MAX_ORDERS_FOR_WEEK: 'MAX_ORDERS_FOR_WEEK'
@@ -39,6 +41,28 @@ module.exports = {
         await browser.close();
 
         return pdf;
+    },
+    getVoucherData: ({price, quantity, barId}, {isGuest, guestData, userId}) => {
+        if(isGuest){
+            return {
+                _id: randomize('Aa0', 8),
+                price,
+                quantity: 1,
+                isGuest,
+                guestData,
+                barId,
+                total: quantity * price
+            }
+        }else{
+            return {
+                _id: randomize('Aa0', 8),
+                price,
+                quantity: 1,
+                userId,
+                barId,
+                total: quantity * price
+            }
+        }
     },
     APP_URL: 'https://naijabarrescue.com',
     smtpTransport: nodemailer.createTransport({
