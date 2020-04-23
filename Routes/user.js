@@ -51,9 +51,11 @@ router.post('/',
 
             await user.save();
 
+            const userObj = user.toObject();
+
             const payload = {
                 user: {
-                    id: user.id
+                    id: userObj._id
                 }
             };
 
@@ -63,7 +65,7 @@ router.post('/',
                 if (err){
                     return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
                 }
-                res.json({token, user, success: true});
+                res.json({token, userObj, success: true});
             });
         } catch (err) {
             res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
@@ -92,7 +94,7 @@ router.route('/login').post(async (req, res) => {
 
         const payload = {
             user: {
-                id: user.id
+                id: user._id
             }
         };
 
