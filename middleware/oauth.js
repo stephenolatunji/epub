@@ -45,7 +45,7 @@ module.exports = (pubRoute = false, adminRoute = false) => {
                     });
                 }
             } else if (!payload.isAdmin) {
-                const user = await User.findById(payload.id);
+                const user = await User.findById(payload.user.id);
                 if (user) {
                     req.user = user;
                 } else {
