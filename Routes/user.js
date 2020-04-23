@@ -9,6 +9,7 @@ const {APP_URL, smtpTransport, responseCodes} = require('../utils');
 const moment = require('moment');
 
 const User = require('../Models/User');
+const Order = require('../Models/Order');
 
 // Register Route
 
@@ -106,11 +107,32 @@ router.route('/login').post(async (req, res) => {
 
         jwt.sign(payload, config.get('jwtSecret'), {
             expiresIn: 3600
-        }, (err, token) => {
+        }, async(err, token) => {
             if (err) {
                 return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
             }
-            res.json({token, user, success: true});
+
+
+            let userObj = user.toObject();
+
+            const today = moment().endOf('day');
+            const lastWeek = moment().subtract(7, 'd');
+
+            //Check orders by user in past week and if greater than or equal to two reject
+            const orders = await Order.countDocuments({
+                date: {
+                    $gte: lastWeek,
+                    $lte: today
+                },
+                userId: user._id
+            });
+
+            userObj = {
+                ...userObj,
+                orders
+            };
+
+            res.json({token, user: userObj, success: true});
         });
     }catch (e) {
         res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
