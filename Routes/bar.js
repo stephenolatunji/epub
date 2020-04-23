@@ -208,4 +208,21 @@ router.route('/:_id')
         }
     });
 
+//Endpoint to verify that the bar still exists and it's amount made is below the threshold
+router.post('/verify', async (req,res) => {
+    const barIds = req.body;
+    const response = {};
+    await Promise.all(
+        barIds.map(async id => {
+            const bar = await Bar.findOne({_id: id}).lean();
+            if(bar){
+                bar.valid = bar.amountMade < 500000 && bar.confirmed;
+            }
+            console.log(bar);
+            response[id] = bar || false;
+        })
+    );
+    res.status(200).json(response)
+});
+
 module.exports = router;
