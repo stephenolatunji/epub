@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const nodemailer = require('nodemailer');
-require('dotenv/config');
-const config = require('config');
 const multer = require("multer");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
