@@ -5,7 +5,7 @@ const app = express();
 const cors = require('cors');
 const connectDB = require('./config/db');
 
-app.options('*', cors());
+// app.options('*', cors());
 app.use(cors());
 
 // Initialize express session middleware
