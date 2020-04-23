@@ -51,12 +51,18 @@ router.post('/',
 
             await user.save();
 
-            const userObj = user.toObject();
+            let userObj = user.toObject();
 
             const payload = {
                 user: {
                     id: userObj._id
                 }
+            };
+
+            userObj = {
+                ...userObj,
+                vouchersUsed: 0,
+                orders: 0
             };
 
             jwt.sign(payload, config.get('jwtSecret'), {
