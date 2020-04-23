@@ -89,7 +89,7 @@ router.post('/', async (req, res) => {
                 userId
             });
 
-            if(prevOrders >= 2){
+            if(prevOrders >= 20){
                 return res.status(400).json({success: false, code: responseCodes.MAX_ORDERS_FOR_WEEK})
             }
         }
@@ -211,6 +211,10 @@ router.post('/', async (req, res) => {
             }
         });
 
+        if(!isGuest){
+            user.vouchersUsed += vouchers.length;
+            await user.save();
+        }
 
         res.json({
             success: true,
