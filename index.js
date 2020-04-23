@@ -29,7 +29,6 @@ app.use('/Admin', Admin);
 // Start server on port
 const port = process.env.PORT || 5000;
 
-
 // Connect Database
 connectDB().then(() => {
     app.listen(port, () => {
