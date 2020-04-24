@@ -129,7 +129,7 @@ router.route('/')
     // @desc        Fetch all bars
     // access       Public
     .get(async (req, res) => {
-        let { page = 1, sort = '', state = null, pageSize = 8, search = null, returnConfirmed = true } = req.query;
+        let { page = 1, sort = '', state = null, pageSize = 8, search = null, returnConfirmed = true, returnConfirmedCount = false } = req.query;
 
         pageSize = Number(pageSize);
         page = Number(page);
@@ -166,12 +166,18 @@ router.route('/')
 
             const count = await Bar.countDocuments(filter);
 
-            res.json({
+            const returnPayload = {
                 success: true,
                 bars,
                 totalPages: Math.ceil(count / pageSize),
                 currentPage: page
-            });
+            };
+
+            if(returnConfirmedCount){
+                returnPayload.confirmedBars = await Bar.countDocuments({confirmed: true})
+            }
+
+            res.json(returnPayload);
         } catch (err) {
             res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
         }
@@ -222,7 +228,6 @@ router.post('/verify', async (req,res) => {
             if(bar){
                 bar.valid = bar.amountMade < 500000 && bar.confirmed;
             }
-            console.log(bar);
             response[id] = bar || false;
         })
     );

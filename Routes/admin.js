@@ -76,12 +76,7 @@ router.post('/login', async (req, res) => {
                 return res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
             }
 
-            let confirmedBars = '';
-            const bars = await Bar.find({bar: bar.confirmed})
-            let numberOfBars = bars.length;
-            confirmedBars += numberOfBars
-
-            res.json({token, admin, success: true, confirmedBars});
+            res.json({token, admin, success: true});
         });
     }catch (e) {
         res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
