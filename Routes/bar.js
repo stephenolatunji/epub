@@ -149,6 +149,10 @@ router.route('/')
             query.sort = { barName: sort.slice(0,1) === '+' ? 1 : -1 }
         }
 
+        if(sort && sort === '+confirmed'){
+            query.sort = { confirmed: 1, barName: 1 }
+        }
+
         if(state){
             filter.city = new RegExp(state, 'i');
         }
