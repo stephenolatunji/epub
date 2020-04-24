@@ -79,7 +79,7 @@ router.post('/login', async (req, res) => {
             let confirmedBars = '';
             const bars = await Bar.find({bar: bar.confirmed})
             let numberOfBars = bars.length;
-            confirmedBars =+ numberOfBars
+            confirmedBars += numberOfBars
 
             res.json({token, admin, success: true, confirmedBars});
         });
