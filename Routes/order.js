@@ -175,7 +175,7 @@ router.post('/', async (req, res) => {
         const mailOptions = {
             to: isGuest ? guestData.email : user.email,
             from: process.env.SMTP_CONSUMER_USER,
-            subject: 'Bought Vouchers!',
+            subject: "Here's Your Voucher!",
             attachments
         };
 
@@ -207,7 +207,8 @@ router.post('/', async (req, res) => {
             template: 'order',
             locals: {
                 orderId: `#${order._id}`.toUpperCase(),
-                vouchers: vouchersMail
+                vouchers: vouchersMail,
+                name: isGuest ? guestData.firstname : user.firstname
             }
         });
 
