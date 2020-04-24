@@ -212,7 +212,7 @@ router.post('/', async (req, res) => {
         });
 
         if(!isGuest){
-            user.vouchersUsed += vouchers.length;
+            user.vouchersUsed += vouchersDb.length;
             await user.save();
         }
 
