@@ -26,7 +26,7 @@ const barSchema = new Schema({
     },
 
     bvn: {
-        type: Number,
+        type: String,
         // required: true,
         trim: true
     },
@@ -38,7 +38,7 @@ const barSchema = new Schema({
     },
     
     accountNumber:{
-        type: Number,
+        type: String,
         required: true,
         trim: true,
     },
@@ -61,13 +61,13 @@ const barSchema = new Schema({
     },
 
     phone1: {
-        type: Number,
+        type: String,
         required: true,
         trim: true,
     },
 
     phone2: {
-        type: Number,
+        type: String,
         trim: true,
     },
 
