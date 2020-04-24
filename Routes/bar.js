@@ -129,7 +129,7 @@ router.route('/')
     // @desc        Fetch all bars
     // access       Public
     .get(async (req, res) => {
-        let { page = 1, sort = null, state = null, pageSize = 8, search = null, returnConfirmed = true } = req.query;
+        let { page = 1, sort = '', state = null, pageSize = 8, search = null, returnConfirmed = true } = req.query;
 
         pageSize = Number(pageSize);
         page = Number(page);
