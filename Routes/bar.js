@@ -3,6 +3,7 @@ const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const nodemailer = require('nodemailer');
 const multer = require("multer");
+const moment = require("moment");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
 const {responseCodes, smtpTransport} = require('../utils');
@@ -129,7 +130,18 @@ router.route('/')
     // @desc        Fetch all bars
     // access       Public
     .get(async (req, res) => {
-        let { page = 1, sort = '', state = null, pageSize = 8, search = null, returnConfirmed = true, returnConfirmedCount = false } = req.query;
+        let {
+            page = 1,
+            sort = '',
+            state = null,
+            pageSize = 8,
+            search = null,
+            returnConfirmed = true,
+            returnConfirmedCount = false,
+            startDate = null,
+            endDate = null,
+            date = null
+        } = req.query;
 
         pageSize = Number(pageSize);
         page = Number(page);
@@ -159,6 +171,30 @@ router.route('/')
 
         if(search){
             filter.barName = new RegExp(search,'i')
+            query.sort = {
+                ...query.sort,
+                date: 1
+            }
+        }
+
+        if(startDate && endDate){
+            filter.date = {
+                $gte: moment(startDate).startOf('day'),
+                $lte: moment(endDate).endOf('day'),
+            };
+            query.sort = {
+                date: -1
+            }
+        }
+
+        if(date){
+            filter.date = {
+                $gte: moment(date).startOf('day'),
+                $lte: moment(date).endOf('day')
+            };
+            query.sort = {
+                date: -1
+            }
         }
 
         try {
