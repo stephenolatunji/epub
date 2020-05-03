@@ -89,7 +89,7 @@ router.post('/', async (req, res) => {
                 userId
             });
 
-            if(prevOrders >= 20){
+            if(prevOrders >= 2){
                 return res.status(400).json({success: false, code: responseCodes.MAX_ORDERS_FOR_WEEK})
             }
         }
