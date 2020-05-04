@@ -38,7 +38,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/login', auth, async (req, res) => {
+router.post('/login', async (req, res) => {
     try {
         const {email, password} = req.body;
 
@@ -83,7 +83,7 @@ router.post('/login', auth, async (req, res) => {
     }
 });
 
-router.post('/toggle-confirm', auth, async (req, res) => {
+router.post('/toggle-confirm', auth(false, true), async (req, res) => {
     try {
         const {barId, confirmed} = req.body;
 
