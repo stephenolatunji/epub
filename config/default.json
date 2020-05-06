@@ -1,5 +1,4 @@
 {
     "mongoURI": "mongodb+srv://user:user@inbev-xwhpb.mongodb.net/test",
-    "HIDDEN_SECRET": "inbev",
-    "jwtSecret": "AB-INBEV"
+    "HIDDEN_SECRET": "inbev"
 }

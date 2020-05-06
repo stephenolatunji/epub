@@ -1,42 +1,14 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const config = require('config');
+require('dotenv').config();
 const auth = require('../middleware/oauth');
-
 const Admin = require('../Models/Admin');
 const Bar = require('../Models/Bar');
 const BarOwner = require('../Models/BarOwner');
 
 const {smtpTransport, APP_URL, responseCodes} = require('../utils');
 
-router.post('/register', async (req, res) => {
-    const {email, password} = req.body;
-
-    try {
-
-        const prevAdmin = await Admin.findOne({email});
-        if (prevAdmin) {
-            return res.status(400).json({message: 'User already exists', success: false, code: responseCodes.USER_ALREADY_EXISTS})
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-
-        const admin = await Admin.create({
-            email,
-            password: hashedPassword
-        });
-
-        await admin.save();
-
-        res.json({user: admin, success: true});
-
-    } catch (err) {
-        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
-    }
-});
 
 router.post('/login', async (req, res) => {
     try {
@@ -69,7 +41,7 @@ router.post('/login', async (req, res) => {
             isAdmin: true
         };
 
-        jwt.sign(payload, config.get('jwtSecret'), {
+        jwt.sign(payload, process.env.JWT_SECRET, {
             expiresIn: 3600
         }, (err, token) => {
             if (err) {

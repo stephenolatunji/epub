@@ -4,6 +4,7 @@ const {check, validationResult} = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
+require('dotenv').config();
 const mongoose = require('mongoose');
 const {APP_URL, smtpTransport, responseCodes} = require('../utils');
 const moment = require('moment');
@@ -51,7 +52,7 @@ router.route('/register')
                     barOwner: true
                 };
 
-                jwt.sign(payload, config.get('jwtSecret'), {
+                jwt.sign(payload, process.env.JWT_SECRET, {
                     expiresIn: 3600
                 }, (err, token) => {
                     if(err){
@@ -112,7 +113,7 @@ router.route('/login')
                     barOwner: true
                 };
 
-                jwt.sign(payload, config.get('jwtSecret'), {
+                jwt.sign(payload, process.env.JWT_SECRET, {
                     expiresIn: 3600
                 }, (err, token) => {
                     if(err){

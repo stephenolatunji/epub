@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const config = require('config');
+require('dotenv').config();
 const {check, validationResult} = require('express-validator');
 const randomize = require('randomatic');
 const {APP_URL, smtpTransport, responseCodes} = require('../utils');
@@ -66,7 +66,7 @@ router.post('/',
                 orders: 0
             };
 
-            jwt.sign(payload, config.get('jwtSecret'), {
+            jwt.sign(payload, process.env.JWT_SECRET, {
                 expiresIn: 3600
             }, (err, token) => {
                 if (err){
@@ -105,7 +105,7 @@ router.route('/login').post(async (req, res) => {
             }
         };
 
-        jwt.sign(payload, config.get('jwtSecret'), {
+        jwt.sign(payload, process.env.JWT_SECRET, {
             expiresIn: 3600
         }, async(err, token) => {
             if (err) {
