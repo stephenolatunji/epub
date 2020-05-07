@@ -169,7 +169,7 @@ router.route('/')
         }
 
         try {
-            const bars = await Bar.find(filter, '+barName +image +address +city +date', query).lean();
+            const bars = await Bar.find(filter, 'barName image address city date', query).lean();
 
             const count = await Bar.countDocuments(filter);
 
@@ -284,7 +284,7 @@ router.route('/:_id')
     .get(async (req, res) => {
 
         try {
-            const bar = await Bar.findById({_id: req.params._id}, '+barName +image +address +city +date');
+            const bar = await Bar.findById({_id: req.params._id}, 'barName image address city date');
             res.json(bar);
         } catch (err) {
             res.status(500).json(err + 'Error')
