@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const config = require('config');
+require('dotenv').config();
 const User = require('../Models/User');
 const BarOwner = require('../Models/BarOwner');
 const {responseCodes} = require('../utils');
@@ -20,7 +20,7 @@ module.exports = (pubRoute = false, adminRoute = false) => {
         }
 
         try {
-            const payload = jwt.verify(token, config.get('jwtSecret'));
+            const payload = jwt.verify(token, process.env.JWT_SECRET);
 
             //If the payload doesnt contain bar owner and it's a pub route then it's invalid
             if (pubRoute && !payload.barOwner) {

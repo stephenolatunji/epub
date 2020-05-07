@@ -6,6 +6,7 @@ const moment = require("moment");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
 const {responseCodes, smtpTransport} = require('../utils');
+const auth = require('../middleware/oauth');
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -197,7 +198,12 @@ router.route('/')
         }
 
         try {
-            const bars = await Bar.find(filter, null, query).lean();
+            const bars = await Bar.find(filter, null, query).select('barName address city image', function(err, ba){
+                if(err){
+                    console.log(err)
+                }
+                console.log(ba)
+            }).lean();
 
             const count = await Bar.countDocuments(filter);
 
@@ -227,7 +233,12 @@ router.route('/:_id')
     .get(async (req, res) => {
 
         try {
-            const bar = await Bar.findById({_id: req.params._id});
+            const bar = await Bar.findById({_id: req.params._id}, 'barName address city image', function (err, ba){
+                if(err){
+                    console.log(err)
+                }
+                console.log(ba)
+            });
             res.json(bar);
         } catch (err) {
             res.status(500).json(err + 'Error')
@@ -252,6 +263,113 @@ router.route('/:_id')
             res.status(500).json(err + 'Error')
         }
     });
+
+
+    router.get('/admin', auth(false, true), async (req, res) => {
+
+        let {
+            page = 1,
+            sort = '',
+            state = null,
+            pageSize = 8,
+            search = null,
+            returnConfirmed = true,
+            returnConfirmedCount = false,
+            startDate = null,
+            endDate = null,
+            date = null
+        } = req.query;
+
+        pageSize = Number(pageSize);
+        page = Number(page);
+
+        let query = {
+            skip: (page - 1) * pageSize,
+            limit: pageSize
+        };
+
+        const filter = {};
+
+        if(returnConfirmed !== 'false'){
+            filter.confirmed = true;
+        }
+
+        if(sort && sort.slice(1) === 'name'){
+            query.sort = { barName: sort.slice(0,1) === '+' ? 1 : -1 }
+        }
+
+        if(sort && sort === '+confirmed'){
+            query.sort = { confirmed: 1, barName: 1 }
+        }
+
+        if(state){
+            filter.city = new RegExp(state, 'i');
+        }
+
+        if(search){
+            filter.barName = new RegExp(search,'i')
+            query.sort = {
+                ...query.sort,
+                date: 1
+            }
+        }
+
+        if(startDate && endDate){
+            filter.date = {
+                $gte: moment(startDate).startOf('day'),
+                $lte: moment(endDate).endOf('day'),
+            };
+            query.sort = {
+                date: -1
+            }
+        }
+
+        if(date){
+            filter.date = {
+                $gte: moment(date).startOf('day'),
+                $lte: moment(date).endOf('day')
+            };
+            query.sort = {
+                date: -1
+            }
+        }
+
+        try {
+            const bars = await Bar.find(filter, null, query).lean();
+
+            const count = await Bar.countDocuments(filter);
+
+            const returnPayload = {
+                success: true,
+                bars,
+                totalPages: Math.ceil(count / pageSize),
+                currentPage: page
+            };
+
+            if(returnConfirmedCount){
+                returnPayload.confirmedBars = await Bar.countDocuments({confirmed: true})
+            }
+
+            res.json(returnPayload);
+        } catch (err) {
+            res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+        }
+    });
+
+    router.route('/:_id/admin')
+    // @route       GET/
+    // @desc        Fetch a single bar by admin. Request populates all the info about a bar
+    // access       Public
+
+    .get( auth(false, true), async (req, res) => {
+
+        try {
+            const bar = await Bar.findById({_id: req.params._id});
+            res.json(bar);
+        } catch (err) {
+            res.status(500).json(err + 'Error')
+        }
+    })
 
 //Endpoint to verify that the bar still exists and it's amount made is below the threshold
 router.post('/verify', async (req,res) => {
