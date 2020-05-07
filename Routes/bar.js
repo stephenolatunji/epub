@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const nodemailer = require('nodemailer');
 const multer = require("multer");
 const moment = require("moment");
 const cloudinary = require("cloudinary");
