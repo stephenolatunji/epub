@@ -20,6 +20,10 @@ const orderSchema = new Schema({
     total: {
         type: Number,
         required: true
+    },
+    reference: {
+        type: String,
+        required: true
     }
 });
 
