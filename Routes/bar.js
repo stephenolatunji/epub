@@ -6,6 +6,7 @@ const moment = require("moment");
 const cloudinary = require("cloudinary");
 const cloudinaryStorage = require("multer-storage-cloudinary");
 const {responseCodes, smtpTransport} = require('../utils');
+const auth = require('../middleware/oauth')
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -197,7 +198,7 @@ router.route('/')
         }
 
         try {
-            const bars = await Bar.find(filter, null, query).lean();
+            const bars = await Bar.find(filter, '-bankName -accountName -accountNumber', query).lean();
 
             const count = await Bar.countDocuments(filter);
 
