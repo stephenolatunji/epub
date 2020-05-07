@@ -137,10 +137,6 @@ router.route('/')
             pageSize = 8,
             search = null,
             returnConfirmed = true,
-            returnConfirmedCount = false,
-            startDate = null,
-            endDate = null,
-            date = null
         } = req.query;
 
         pageSize = Number(pageSize);
@@ -161,10 +157,6 @@ router.route('/')
             query.sort = { barName: sort.slice(0,1) === '+' ? 1 : -1 }
         }
 
-        if(sort && sort === '+confirmed'){
-            query.sort = { confirmed: 1, barName: 1 }
-        }
-
         if(state){
             filter.city = new RegExp(state, 'i');
         }
@@ -174,26 +166,6 @@ router.route('/')
             query.sort = {
                 ...query.sort,
                 date: 1
-            }
-        }
-
-        if(startDate && endDate){
-            filter.date = {
-                $gte: moment(startDate).startOf('day'),
-                $lte: moment(endDate).endOf('day'),
-            };
-            query.sort = {
-                date: -1
-            }
-        }
-
-        if(date){
-            filter.date = {
-                $gte: moment(date).startOf('day'),
-                $lte: moment(date).endOf('day')
-            };
-            query.sort = {
-                date: -1
             }
         }
 
@@ -208,10 +180,6 @@ router.route('/')
                 totalPages: Math.ceil(count / pageSize),
                 currentPage: page
             };
-
-            if(returnConfirmedCount){
-                returnPayload.confirmedBars = await Bar.countDocuments({confirmed: true})
-            }
 
             res.json(returnPayload);
         } catch (err) {
