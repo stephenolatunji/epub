@@ -6,6 +6,7 @@ const moment = require('moment');
 const path = require('path');
 const Email = require('email-templates');
 const randomize = require('randomatic');
+const paystack = require('paystack')(process.env.PAYSTACK_SECRET);
 
 const Order = require('../Models/Order');
 const Voucher = require('../Models/Voucher');
@@ -40,12 +41,54 @@ router.post('/', async (req, res) => {
 
     let {reference, userId, vouchers, isGuest = false, guestData} = req.body;
 
-    //Verify reference using https://api.paystack.co/transaction/verify/refId
+    //Calculate the total price of the order
+    const ordersTotal = vouchers.reduce((currentTotal, {price, quantity}) => currentTotal + (price * quantity), 0);
 
+    //Verify reference using https://api.paystack.co/transaction/verify/refId
+    let paystackData;
+    try{
+        paystackData = await verifyOrder(reference)
+        //If invalid reference then order is invalid
+        if(!paystackData.status){
+            return res.status(400).json({
+                message: 'Order not valid',
+                code: responseCodes.INVALID_ORDER
+            })
+        }
+
+        const paystackVouchers = paystackData.data.metadata.vouchers
+        //If vouchers in metadata don't match orders sent then it's invalid
+        if(JSON.stringify(paystackVouchers) !== JSON.stringify(vouchers)){
+            return res.status(400).json({
+                message: 'Order not valid',
+                code: responseCodes.INVALID_ORDER
+            })
+        }
+
+        //If amount in paystack data doesn't match order then it's invalid (*100 is to convert to kobo)
+        if(paystackData.data.amount !== (ordersTotal * 100)){
+            return res.status(400).json({
+                message: 'Order not valid',
+                code: responseCodes.INVALID_ORDER
+            })
+        }
+
+        //If an order with that reference already exists then it's invalid
+        const prevOrder = await Order.findOne({reference})
+        if(prevOrder){
+            return res.status(400).json({
+                message: 'Order not valid',
+                code: responseCodes.INVALID_ORDER
+            })
+        }
+    }catch (e) {
+        return res.status(400).json({
+            message: 'Order not valid',
+            code: responseCodes.INVALID_ORDER
+        })
+    }
 
     try {
-        //Calculate the total price of the order
-        const ordersTotal = vouchers.reduce((currentTotal, {price, quantity}) => currentTotal + (price * quantity), 0);
         //If greater than 45000 reject the order
         if (ordersTotal > 45000) {
             return res.status(400).json({
@@ -108,7 +151,7 @@ router.post('/', async (req, res) => {
 
         //If no vouchers in the filtered array then the person paid for a totally invalid amount of vouchers
         if(vouchers.length === 0){
-            return res.json({
+            return res.status(400).json({
                 success: false,
                 code: responseCodes.BAR_REACHED_LIMIT
             })
@@ -133,7 +176,8 @@ router.post('/', async (req, res) => {
         const order = await Order.create({
             userId,
             vouchers: vouchersDb,
-            total: ordersTotal
+            total: ordersTotal,
+            reference
         });
 
         //Create transport
@@ -331,5 +375,33 @@ router.get('/byOwner/:barId', auth(true), async (req, res) => {
         res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
+
+const verifyOrder = (reference) => {
+    return new Promise((resolve, reject) => {
+        paystack.transaction.verify(reference, (error, body) => {
+            if(error){
+                reject(error)
+            }else{
+                resolve(body)
+            }
+        })
+    })
+}
+
+router.get('/payments', async (req,res) => {
+    try{
+        paystack.transaction.list({perPage: 2}).then((error, body) => {
+            if(error){
+                console.log(e)
+                res.send(error)
+            }else{
+                res.send(transactions)
+            }
+        })
+    }catch (e) {
+        console.log(e)
+        res.send(e)
+    }
+})
 
 module.exports = router;
