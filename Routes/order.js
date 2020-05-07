@@ -261,7 +261,7 @@ router.route('/use-voucher/:_id')
     });
 
 router.get('/byUser/:userId', auth(), async (req, res) => {
-    if(req.user.id !== req.params.userId){
+    if(String(req.user.id) !== req.params.userId){
         return res.status(401).json({
             message: 'User not authorized',
             code: responseCodes.NOT_AUTHORISED
@@ -282,7 +282,7 @@ router.get('/byUser/:userId', auth(), async (req, res) => {
 router.get('/byOwner/:barId', auth(true), async (req, res) => {
     let {page = 1, pageSize = 10} = req.query;
 
-    if(req.user.id !== req.params.barId){
+    if(String(req.user.bar) !== req.params.barId){
         return res.status(401).json({
             message: 'User not authorized',
             code: responseCodes.NOT_AUTHORISED
