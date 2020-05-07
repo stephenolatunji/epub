@@ -187,6 +187,95 @@ router.route('/')
         }
     });
 
+router.get('/admin', auth(false, true), async (req, res) => {
+    let {
+        page = 1,
+        sort = '',
+        state = null,
+        pageSize = 8,
+        search = null,
+        returnConfirmed = true,
+        returnConfirmedCount = false,
+        startDate = null,
+        endDate = null,
+        date = null
+    } = req.query;
+
+    pageSize = Number(pageSize);
+    page = Number(page);
+
+    let query = {
+        skip: (page - 1) * pageSize,
+        limit: pageSize
+    };
+
+    const filter = {};
+
+    if(returnConfirmed !== 'false'){
+        filter.confirmed = true;
+    }
+
+    if(sort && sort.slice(1) === 'name'){
+        query.sort = { barName: sort.slice(0,1) === '+' ? 1 : -1 }
+    }
+
+    if(sort && sort === '+confirmed'){
+        query.sort = { confirmed: 1, barName: 1 }
+    }
+
+    if(state){
+        filter.city = new RegExp(state, 'i');
+    }
+
+    if(search){
+        filter.barName = new RegExp(search,'i')
+        query.sort = {
+            ...query.sort,
+            date: 1
+        }
+    }
+
+    if(startDate && endDate){
+        filter.date = {
+            $gte: moment(startDate).startOf('day'),
+            $lte: moment(endDate).endOf('day'),
+        };
+        query.sort = {
+            date: -1
+        }
+    }
+
+    if(date){
+        filter.date = {
+            $gte: moment(date).startOf('day'),
+            $lte: moment(date).endOf('day')
+        };
+        query.sort = {
+            date: -1
+        }
+    }
+
+    try {
+        const bars = await Bar.find(filter, null, query).lean();
+
+        const count = await Bar.countDocuments(filter);
+
+        const returnPayload = {
+            success: true,
+            bars,
+            totalPages: Math.ceil(count / pageSize),
+            currentPage: page
+        };
+
+        if(returnConfirmedCount){
+            returnPayload.confirmedBars = await Bar.countDocuments({confirmed: true})
+        }
+
+        res.json(returnPayload);
+    } catch (err) {
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+    }
+})
 
 router.route('/:_id')
     // @route       GET/
