@@ -19,8 +19,7 @@ app.use(helmet({
             scriptSrc: ["'self"]
         }
     },
-    referrerPolicy: { policy: 'same-origin'},
-    featurePolicy: {}
+    referrerPolicy: { policy: 'same-origin'}
 }))
 
 // Routes initialized
