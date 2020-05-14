@@ -2,6 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const config = require('config');
 const app = express();
+const helmet = require('helmet');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
@@ -11,6 +12,16 @@ app.use(cors());
 // Initialize express session middleware
 app.use(express.json());
 app.use(express.static('assets'));
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self"],
+            scriptSrc: ["'self"]
+        }
+    },
+    referrerPolicy: { policy: 'same-origin'},
+    featurePolicy: {}
+}))
 
 // Routes initialized
 const User = require('./Routes/user');

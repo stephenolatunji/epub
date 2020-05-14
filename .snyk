@@ -1,0 +1,75 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-JS-LODASH-567746:
+    - cloudinary > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - convert-html-to-pdf > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - email-templates > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - express-validator > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - email-templates > @ladjs/i18n > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - email-templates > html-to-text > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - email-templates > preview-email > mailparser > html-to-text > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - pug > pug-code-gen > constantinople > babel-types > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - pug > pug-filters > constantinople > babel-types > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - pug > pug-code-gen > pug-attrs > constantinople > babel-types > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - nodemailer-sendgrid-transport > sendgrid > smtpapi > esdoc > babel-generator > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - nodemailer-sendgrid-transport > sendgrid > smtpapi > esdoc > babel-traverse > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - nodemailer-sendgrid-transport > sendgrid > smtpapi > esdoc > cheerio > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - email-templates > preview-email > pug > pug-code-gen > constantinople > babel-types > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - email-templates > preview-email > pug > pug-filters > constantinople > babel-types > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.749Z'
+    - nodemailer-sendgrid-transport > sendgrid > smtpapi > esdoc > babel-generator > babel-types > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.750Z'
+    - nodemailer-sendgrid-transport > sendgrid > smtpapi > esdoc > babel-traverse > babel-types > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.750Z'
+    - nodemailer-sendgrid-transport > sendgrid > smtpapi > esdoc > ice-cap > cheerio > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.750Z'
+    - email-templates > preview-email > pug > pug-code-gen > pug-attrs > constantinople > babel-types > lodash:
+        reason: /
+        expires: '2020-06-12T22:00:21.750Z'
+  SNYK-JS-LODASH-73639:
+    - nodemailer-sendgrid-transport > sendgrid > lodash:
+        reason: None given
+        expires: '2020-06-12T22:00:21.750Z'
+  SNYK-JS-MARKED-174116:
+    - nodemailer-sendgrid-transport > sendgrid > smtpapi > esdoc > marked:
+        reason: ''
+        expires: '2020-06-12T22:00:21.750Z'
+  SNYK-JS-MARKED-451540:
+    - nodemailer-sendgrid-transport > sendgrid > smtpapi > esdoc > marked:
+        reason: None given
+        expires: '2020-06-12T22:00:21.750Z'
+patch: {}
