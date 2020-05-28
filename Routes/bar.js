@@ -11,7 +11,7 @@ const auth = require('../middleware/oauth')
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
     api_key: process.env.CLOUDINARY_KEY,
-    api_secret: process.env.CLOUDNARY_SECRET
+    api_secret: process.env.CLOUDINARY_SECRET
 });
 
 const storage = cloudinaryStorage({

@@ -1,4 +1,4 @@
 {
-    "mongoURI": "mongodb+srv://user:user@inbev-xwhpb.mongodb.net/test",
+    "mongoURI": "mongodb+srv://steve:user@cluster0-vvvdj.mongodb.net/tt?retryWrites=true&w=majority",
     "HIDDEN_SECRET": "inbev"
 }
