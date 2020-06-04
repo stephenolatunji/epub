@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const nodemailer = require('nodemailer');
 const randomize = require('randomatic');
+const paystack = require('paystack')(process.env.PAYSTACK_SECRET);
 
 const responseCodes = {
     SERVER_ERROR: 'SERVER_ERROR',
@@ -21,7 +22,8 @@ const responseCodes = {
     VOUCHER_USED: 'VOUCHER_USED',
     MAX_ORDERS_FOR_WEEK: 'MAX_ORDERS_FOR_WEEK',
     NOT_AUTHORISED: 'NOT_AUTHORISED',
-    INVALID_ORDER: 'INVALID_ORDER'
+    INVALID_ORDER: 'INVALID_ORDER',
+    ORDER_ALREADY_EXISTS: 'ORDER_ALREADY_EXISTS'
 };
 
 module.exports = {
@@ -76,5 +78,16 @@ module.exports = {
             pass: process.env.SMTP_PASSWORD
         }
     }),
-    responseCodes
+    responseCodes,
+    verifyOrder: (reference) => {
+        return new Promise((resolve, reject) => {
+            paystack.transaction.verify(reference, (error, body) => {
+                if(error){
+                    reject(error)
+                }else{
+                    resolve(body)
+                }
+            })
+        })
+    }
 };

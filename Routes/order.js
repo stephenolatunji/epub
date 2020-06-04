@@ -5,18 +5,15 @@ const nodemailer = require('nodemailer');
 const moment = require('moment');
 const path = require('path');
 const Email = require('email-templates');
-const randomize = require('randomatic');
-const paystack = require('paystack')(process.env.PAYSTACK_SECRET);
 
 const Order = require('../Models/Order');
 const Voucher = require('../Models/Voucher');
 const User = require('../Models/User');
 const Bar = require('../Models/Bar');
-const Total = require('../Models/Total');
 
 const {default: HTMLToPDF} = require('convert-html-to-pdf');
 
-const {htmlToPdf, responseCodes, getVoucherData} = require('../utils');
+const {htmlToPdf, responseCodes, getVoucherData, verifyOrder} = require('../utils');
 
 const emailRender = new Email({
     juice: true,
@@ -375,33 +372,5 @@ router.get('/byOwner/:barId', auth(true), async (req, res) => {
         res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
-
-const verifyOrder = (reference) => {
-    return new Promise((resolve, reject) => {
-        paystack.transaction.verify(reference, (error, body) => {
-            if(error){
-                reject(error)
-            }else{
-                resolve(body)
-            }
-        })
-    })
-}
-
-router.get('/payments', async (req,res) => {
-    try{
-        paystack.transaction.list({perPage: 2}).then((error, body) => {
-            if(error){
-                console.log(e)
-                res.send(error)
-            }else{
-                res.send(transactions)
-            }
-        })
-    }catch (e) {
-        console.log(e)
-        res.send(e)
-    }
-})
 
 module.exports = router;
