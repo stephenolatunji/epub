@@ -2,6 +2,8 @@ const puppeteer = require('puppeteer');
 const nodemailer = require('nodemailer');
 const randomize = require('randomatic');
 const paystack = require('paystack')(process.env.PAYSTACK_SECRET);
+const path = require('path');
+const Email = require('email-templates');
 
 const responseCodes = {
     SERVER_ERROR: 'SERVER_ERROR',
@@ -26,6 +28,16 @@ const responseCodes = {
     ORDER_ALREADY_EXISTS: 'ORDER_ALREADY_EXISTS',
     ORDER_NOT_FOUND: 'ORDER_NOT_FOUND'
 };
+
+const emailRender = new Email({
+    juice: true,
+    juiceResources: {
+        preserveImportant: true,
+        webResources: {
+            relativeTo: path.resolve('emails')
+        }
+    },
+});
 
 module.exports = {
     htmlToPdf: async (html) => {
@@ -90,5 +102,8 @@ module.exports = {
                 }
             })
         })
+    },
+    getVoucherHTML: (options) => {
+        return emailRender.render('voucher/html', options)
     }
 };
