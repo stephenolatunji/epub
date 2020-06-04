@@ -6,8 +6,9 @@ const auth = require('../middleware/oauth');
 const Admin = require('../Models/Admin');
 const Bar = require('../Models/Bar');
 const BarOwner = require('../Models/BarOwner');
+const Order = require('../Models/Order');
 
-const {smtpTransport, APP_URL, responseCodes} = require('../utils');
+const {smtpTransport, APP_URL, responseCodes, verifyOrder} = require('../utils');
 
 
 router.post('/login', async (req, res) => {
@@ -127,5 +128,53 @@ router.post('/toggle-confirm', auth(false, true), async (req, res) => {
         res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
     }
 });
+
+router.post('/generate-order', auth(false, true), async (req, res) => {
+    try {
+        const { reference } = req.params;
+
+        const order = await Order.findOne({ reference })
+
+        if(order){
+            return res.status(400).send({
+                success: false,
+                code: responseCodes.ORDER_ALREADY_EXISTS
+            })
+        }
+
+        const paystackData = await verifyOrder(reference)
+
+        if(!paystackData.status){
+            return res.status(400).json({
+                message: 'Order not valid',
+                code: responseCodes.INVALID_ORDER
+            })
+        }
+
+        const { userId, userDetails, vouchers } = paystackData.data.metadata
+
+        const orderObj = {
+            reference,
+            vouchers,
+        }
+
+        if(userId === 'guest'){
+            orderObj.isGuest = true
+            orderObj.guestData = userDetails
+        }else{
+            orderObj.userId = userId
+        }
+
+        return res.status(200).send({
+            success: true,
+            order: orderObj
+        })
+    } catch (e) {
+        return res.status(500).send({
+            success: false,
+            code: responseCodes.SERVER_ERROR
+        })
+    }
+})
 
 module.exports = router;
