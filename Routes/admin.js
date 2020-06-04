@@ -1,15 +1,21 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const Email = require('email-templates');
+const path = require('path');
+
 require('dotenv').config();
+
 const auth = require('../middleware/oauth');
+
 const Admin = require('../Models/Admin');
 const Bar = require('../Models/Bar');
 const BarOwner = require('../Models/BarOwner');
 const Order = require('../Models/Order');
+const User = require('../Models/User');
 
-const {smtpTransport, APP_URL, responseCodes, verifyOrder} = require('../utils');
-
+const {smtpTransport, APP_URL, responseCodes, verifyOrder, getVoucherHTML, htmlToPdf} = require('../utils');
 
 router.post('/login', async (req, res) => {
     try {
@@ -129,7 +135,7 @@ router.post('/toggle-confirm', auth(false, true), async (req, res) => {
     }
 });
 
-router.post('/generate-order', auth(false, true), async (req, res) => {
+router.get('/generate-order/:reference', auth(false, true), async (req, res) => {
     try {
         const { reference } = req.params;
 
@@ -170,6 +176,118 @@ router.post('/generate-order', auth(false, true), async (req, res) => {
             order: orderObj
         })
     } catch (e) {
+        return res.status(500).send({
+            success: false,
+            code: responseCodes.SERVER_ERROR
+        })
+    }
+})
+
+// router.post(`/send-email/:reference`, auth(false, true), async (req, res) => {
+router.post(`/send-email/:reference`, async (req, res) => {
+    try{
+        const { reference } = req.params;
+
+        const order = await Order.findOne({ reference })
+            .populate({
+                path: 'vouchers',
+                populate: {
+                    path: 'barId',
+                }
+            })
+
+        const voucher = order.vouchers[0];
+        let user;
+        
+        if(voucher && !voucher.isGuest){
+            user = await User.findById(voucher.userId)
+        }
+        
+        if(!order){
+            return res.status(400).send({
+                success: false,
+                code: responseCodes.ORDER_NOT_FOUND
+            })
+        }
+
+        const smtpTransport = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.SMTP_CONSUMER_USER,
+                pass: process.env.SMTP_CONSUMER_PASSWORD
+            }
+        });
+
+        //Get attachments
+        const attachments = await Promise.all(
+            order.vouchers.map(async ({quantity, price, barId: bar, _id}) => {
+                //Get voucher html
+                const voucherHTML = await getVoucherHTML({
+                    price: `${price} x ${quantity}`,
+                    address: bar.address,
+                    name: bar.barName,
+                    id: _id
+                });
+
+                //Convert voucher html to pdf
+                const pdf = await htmlToPdf(voucherHTML);
+
+                return {
+                    content: pdf,
+                    contentType: 'application/pdf',
+                    contentDisposition: 'attachment',
+                    fileName: `${bar.barName} * ${quantity}.pdf`
+                };
+            })
+        );
+
+        const mailOptions = {
+            to: voucher.isGuest ? voucher.guestData.email : user.email,
+            from: process.env.SMTP_CONSUMER_USER,
+            subject: "Here's Your Voucher!",
+            attachments
+        };
+
+        const email = new Email({
+            juice: true,
+            juiceResources: {
+                preserveImportant: true,
+                webResources: {
+                    relativeTo: path.resolve('emails')
+                }
+            },
+            transport: smtpTransport,
+            //Uncomment this line to make it send mails in development
+            // send: true
+        });
+
+        const vouchersMail = order.vouchers.map(({quantity, price, barId: bar}) => (
+            {
+                title: `${bar.barName} x ${quantity}`,
+                price,
+                image: bar.image
+            }
+        ));
+
+        await email.send({
+            message: mailOptions,
+            template: 'order',
+            locals: {
+                orderId: `#${order._id}`.toUpperCase(),
+                vouchers: vouchersMail,
+                name: voucher.isGuest ? voucher.guestData.firstname : user.firstname
+            }
+        });
+
+        res.status(200).send({
+            success: true,
+            order
+        })
+
+    }catch (e) {
+        console.log(e)
         return res.status(500).send({
             success: false,
             code: responseCodes.SERVER_ERROR
