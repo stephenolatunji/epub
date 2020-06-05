@@ -183,8 +183,7 @@ router.get('/generate-order/:reference', auth(false, true), async (req, res) => 
     }
 })
 
-// router.post(`/send-email/:reference`, auth(false, true), async (req, res) => {
-router.post(`/send-email/:reference`, async (req, res) => {
+router.post(`/send-email/:reference`, auth(false, true), async (req, res) => {
     try{
         const { reference } = req.params;
 
