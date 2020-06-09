@@ -169,13 +169,18 @@ router.post('/', async (req, res) => {
         //Flatten array of created vouchers
         vouchersDb = vouchersDb.flat(1);
 
-        //Create order
-        const order = await Order.create({
-            userId,
+        const orderObj = {
             vouchers: vouchersDb,
             total: ordersTotal,
             reference
-        });
+        }
+
+        if(!isGuest){
+            orderObj.userId = userId
+        }
+
+        //Create order
+        const order = await Order.create(orderObj);
 
         //Create transport
         const smtpTransport = nodemailer.createTransport({
