@@ -243,7 +243,8 @@ router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
     } catch (e) {
         return res.status(500).send({
             success: false,
-            code: responseCodes.SERVER_ERROR
+            code: responseCodes.SERVER_ERROR,
+            error: e
         })
     }
 })
