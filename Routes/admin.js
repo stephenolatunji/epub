@@ -241,6 +241,7 @@ router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
             order
         })
     } catch (e) {
+        console.log(e)
         return res.status(500).send({
             success: false,
             code: responseCodes.SERVER_ERROR
