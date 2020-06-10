@@ -276,28 +276,28 @@ const sendEmail = async order => {
         }
     });
 
-    //Get attachments
-    const attachments = await Promise.all(
-        order.vouchers.map(async ({quantity, price, barId: bar, _id}) => {
-            //Get voucher html
-            const voucherHTML = await getVoucherHTML({
-                price: `${price} x ${quantity}`,
-                address: bar.address,
-                name: bar.barName,
-                id: _id
-            });
+    const attachments = []
 
-            //Convert voucher html to pdf
-            const pdf = await htmlToPdf(voucherHTML);
+    await order.vouchers.reduce(async (promise, {quantity, price, barId: bar, _id}) => {
+        await promise
+        //Get voucher html
+        const voucherHTML = await getVoucherHTML({
+            price: `${price} x ${quantity}`,
+            address: bar.address,
+            name: bar.barName,
+            id: _id
+        });
 
-            return {
-                content: pdf,
-                contentType: 'application/pdf',
-                contentDisposition: 'attachment',
-                fileName: `${bar.barName} * ${quantity}.pdf`
-            };
-        })
-    );
+        //Convert voucher html to pdf
+        const pdf = await htmlToPdf(voucherHTML);
+
+        attachments.push({
+            content: pdf,
+            contentType: 'application/pdf',
+            contentDisposition: 'attachment',
+            fileName: `${bar.barName} * ${quantity}.pdf`
+        });
+    }, Promise.resolve())
 
     const mailOptions = {
         to: voucher.isGuest ? voucher.guestData.email : user.email,

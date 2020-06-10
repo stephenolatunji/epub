@@ -194,29 +194,28 @@ router.post('/', async (req, res) => {
         });
 
         //Get attachments
-        const attachments = await Promise.all(
-            vouchersDb.map(async ({quantity, price, barId, _id}) => {
-                const bar = bars[barId];
+        const attachments = []
 
-                //Get voucher html
-                const voucherHTML = await getVoucherHTML({
-                    price: `${price} x ${quantity}`,
-                    address: bar.address,
-                    name: bar.barName,
-                    id: _id
-                });
+        await order.vouchers.reduce(async (promise, {quantity, price, barId: bar, _id}) => {
+            await promise
+            //Get voucher html
+            const voucherHTML = await getVoucherHTML({
+                price: `${price} x ${quantity}`,
+                address: bar.address,
+                name: bar.barName,
+                id: _id
+            });
 
-                //Convert voucher html to pdf
-                const pdf = await htmlToPdf(voucherHTML);
+            //Convert voucher html to pdf
+            const pdf = await htmlToPdf(voucherHTML);
 
-                return {
-                    content: pdf,
-                    contentType: 'application/pdf',
-                    contentDisposition: 'attachment',
-                    fileName: `${bar.barName} * ${quantity}.pdf`
-                };
-            })
-        );
+            attachments.push({
+                content: pdf,
+                contentType: 'application/pdf',
+                contentDisposition: 'attachment',
+                fileName: `${bar.barName} * ${quantity}.pdf`
+            });
+        }, Promise.resolve())
 
         const mailOptions = {
             to: isGuest ? guestData.email : user.email,
