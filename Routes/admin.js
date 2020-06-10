@@ -137,7 +137,8 @@ router.post('/toggle-confirm', auth(false, true), async (req, res) => {
     }
 });
 
-router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
+// router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
+router.get('/resend-email/:reference', async (req, res) => {
     try {
         const {reference} = req.params;
 
@@ -241,10 +242,11 @@ router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
             order
         })
     } catch (e) {
+        console.log(e)
         return res.status(500).send({
             success: false,
             code: responseCodes.SERVER_ERROR,
-            error: e
+            error: e.message
         })
     }
 })
