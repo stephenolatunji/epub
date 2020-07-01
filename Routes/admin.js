@@ -137,7 +137,9 @@ router.post('/toggle-confirm', auth(false, true), async (req, res) => {
     }
 });
 
-router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
+// router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
+
+router.get('/resend-email/:reference', async (req, res) => {
     try {
         const {reference} = req.params;
 
@@ -160,7 +162,12 @@ router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
                 })
             }
 
-            let {userId, userDetails, vouchers} = paystackData.data.metadata
+            let {userId, userDetails = {}, vouchers} = paystackData.data.metadata
+
+            if(!userDetails.email){
+                //If email does not exist extract it from paystack metadata
+                userDetails.email = paystackData.data.customer.email
+            }
 
             const isGuest = userId === 'guest'
 
@@ -198,11 +205,13 @@ router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
                 })
             }
 
+            const barsToSave = [];
+
             let vouchersDb = await Promise.all(
                 vouchers.map(async voucher => {
                     //Increase bar's amount made
                     bars[voucher.barId].amountMade += voucher.quantity * voucher.price;
-                    await bars[voucher.barId].save();
+                    barsToSave.push(voucher.barId)
                     //Get an array of the vouchers separated
                     const vouchers = [...Array(voucher.quantity)].map(_ => getVoucherData(voucher, {
                         isGuest,
@@ -213,6 +222,12 @@ router.get('/resend-email/:reference', auth(false, true), async (req, res) => {
                     return Voucher.create(vouchers)
                 })
             );
+
+            await Promise.all(
+                [...new Set(barsToSave)].map(id => {
+                    return bars[id].save()
+                })
+            )
 
             vouchersDb = vouchersDb.flat(1)
 
@@ -314,7 +329,7 @@ const sendEmail = async order => {
         },
         transport: smtpTransport,
         //Uncomment this line to make it send mails in development
-        // send: true
+        send: true
     });
 
     const vouchersMail = order.vouchers.map(({quantity, price, barId: bar}) => (
@@ -331,7 +346,7 @@ const sendEmail = async order => {
         locals: {
             orderId: `#${order._id}`.toUpperCase(),
             vouchers: vouchersMail,
-            name: voucher.isGuest ? voucher.guestData.firstname : user.firstname
+            name: (voucher.isGuest ? voucher.guestData.firstname : user.firstname) || 'User'
         }
     });
 }

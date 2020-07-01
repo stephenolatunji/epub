@@ -154,17 +154,29 @@ router.post('/', async (req, res) => {
             })
         }
 
+        const barsToSave = [];
+
         let vouchersDb = await Promise.all(
             vouchers.map(async voucher => {
                 //Increase bar's amount made
                 bars[voucher.barId].amountMade += voucher.quantity * voucher.price;
-                await bars[voucher.barId].save();
+                barsToSave.push(voucher.barId)
                 //Get an array of the vouchers separated
-                const vouchers = [...Array(voucher.quantity)].map(_ => getVoucherData(voucher, {isGuest, guestData, userId}));
+                const vouchers = [...Array(voucher.quantity)].map(_ => getVoucherData(voucher, {
+                    isGuest,
+                    guestData: userDetails,
+                    userId
+                }));
                 //Return created vouchers
                 return Voucher.create(vouchers)
             })
         );
+
+        await Promise.all(
+            [...new Set(barsToSave)].map(id => {
+                return bars[id].save()
+            })
+        )
 
         //Flatten array of created vouchers
         vouchersDb = vouchersDb.flat(1);
