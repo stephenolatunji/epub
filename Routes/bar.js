@@ -277,39 +277,39 @@ router.get('/admin', auth(false, true), async (req, res) => {
     }
 })
 
-router.route('/:_id')
+router.route('/:_id****&&&$%^')
     // @route       GET/
     // @desc         Fetch a single bar
     // access       Public
 
-    // .get(async (req, res) => {
+    .get(async (req, res) => {
 
-    //     try {
-    //         const bar = await Bar.findById({_id: req.params._id}, 'barName image address city date');
-    //         res.json(bar);
-    //     } catch (err) {
-    //         res.status(500).json(err + 'Error')
-    //     }
-    // })
+        try {
+            const bar = await Bar.findById({_id: req.params._id}, 'barName image address city date');
+            res.json(bar);
+        } catch (err) {
+            res.status(500).json(err + 'Error')
+        }
+    })
 
 
     // @route       PATCH/
     // @desc        Updates a specific bar
     // access       Public
 
-    // .patch(async (req, res) => {
+    .patch(async (req, res) => {
 
-    //     try {
+        try {
 
-    //         const bar = await Bar.update(
-    //             {_id: req.params._id},
-    //             {$set: req.body}
-    //         );
-    //         res.json(bar)
-    //     } catch (err) {
-    //         res.status(500).json(err + 'Error')
-    //     }
-    // });
+            const bar = await Bar.update(
+                {_id: req.params._id},
+                {$set: req.body}
+            );
+            res.json(bar)
+        } catch (err) {
+            res.status(500).json(err + 'Error')
+        }
+    });
 
 //Endpoint to verify that the bar still exists and it's amount made is below the threshold
 router.post('/verify', async (req,res) => {
