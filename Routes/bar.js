@@ -282,15 +282,15 @@ router.route('/:_id')
     // @desc         Fetch a single bar
     // access       Public
 
-    .get(async (req, res) => {
+    // .get(async (req, res) => {
 
-        try {
-            const bar = await Bar.findById({_id: req.params._id}, 'barName image address city date');
-            res.json(bar);
-        } catch (err) {
-            res.status(500).json(err + 'Error')
-        }
-    })
+    //     try {
+    //         const bar = await Bar.findById({_id: req.params._id}, 'barName image address city date');
+    //         res.json(bar);
+    //     } catch (err) {
+    //         res.status(500).json(err + 'Error')
+    //     }
+    // })
 
 
     // @route       PATCH/
