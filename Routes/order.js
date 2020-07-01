@@ -34,7 +34,7 @@ const getVoucherHTML = (options) => {
 // @desc        Make new order
 // access       Private
 
-router.post('/', async (req, res) => {
+router.post('/34***##', async (req, res) => {
 
     let {reference, userId, vouchers, isGuest = false, guestData} = req.body;
 
