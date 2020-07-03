@@ -34,256 +34,256 @@ const getVoucherHTML = (options) => {
 // @desc        Make new order
 // access       Private
 
-// router.post('/34***##', async (req, res) => {
+router.post('/34***##', async (req, res) => {
 
-//     let {reference, userId, vouchers, isGuest = false, guestData} = req.body;
+    let {reference, userId, vouchers, isGuest = false, guestData} = req.body;
 
-//     //Calculate the total price of the order
-//     const ordersTotal = vouchers.reduce((currentTotal, {price, quantity}) => currentTotal + (price * quantity), 0);
+    //Calculate the total price of the order
+    const ordersTotal = vouchers.reduce((currentTotal, {price, quantity}) => currentTotal + (price * quantity), 0);
 
-//     //Verify reference using https://api.paystack.co/transaction/verify/refId
-//     let paystackData;
-//     try{
-//         paystackData = await verifyOrder(reference)
-//         //If invalid reference then order is invalid
-//         if(!paystackData.status){
-//             return res.status(400).json({
-//                 message: 'Order not valid',
-//                 code: responseCodes.INVALID_ORDER
-//             })
-//         }
+    //Verify reference using https://api.paystack.co/transaction/verify/refId
+    let paystackData;
+    try{
+        paystackData = await verifyOrder(reference)
+        //If invalid reference then order is invalid
+        if(!paystackData.status){
+            return res.status(400).json({
+                message: 'Order not valid',
+                code: responseCodes.INVALID_ORDER
+            })
+        }
 
-//         const paystackVouchers = paystackData.data.metadata.vouchers
-//         //If vouchers in metadata don't match orders sent then it's invalid
-//         if(JSON.stringify(paystackVouchers) !== JSON.stringify(vouchers)){
-//             return res.status(400).json({
-//                 message: 'Order not valid',
-//                 code: responseCodes.INVALID_ORDER
-//             })
-//         }
+        const paystackVouchers = paystackData.data.metadata.vouchers
+        //If vouchers in metadata don't match orders sent then it's invalid
+        if(JSON.stringify(paystackVouchers) !== JSON.stringify(vouchers)){
+            return res.status(400).json({
+                message: 'Order not valid',
+                code: responseCodes.INVALID_ORDER
+            })
+        }
 
-//         //If amount in paystack data doesn't match order then it's invalid (*100 is to convert to kobo)
-//         if(paystackData.data.amount !== (ordersTotal * 100)){
-//             return res.status(400).json({
-//                 message: 'Order not valid',
-//                 code: responseCodes.INVALID_ORDER
-//             })
-//         }
+        //If amount in paystack data doesn't match order then it's invalid (*100 is to convert to kobo)
+        if(paystackData.data.amount !== (ordersTotal * 100)){
+            return res.status(400).json({
+                message: 'Order not valid',
+                code: responseCodes.INVALID_ORDER
+            })
+        }
 
-//         //If an order with that reference already exists then it's invalid
-//         const prevOrder = await Order.findOne({reference})
-//         if(prevOrder){
-//             return res.status(400).json({
-//                 message: 'Order not valid',
-//                 code: responseCodes.INVALID_ORDER
-//             })
-//         }
-//     }catch (e) {
-//         return res.status(400).json({
-//             message: 'Order not valid',
-//             code: responseCodes.INVALID_ORDER
-//         })
-//     }
+        //If an order with that reference already exists then it's invalid
+        const prevOrder = await Order.findOne({reference})
+        if(prevOrder){
+            return res.status(400).json({
+                message: 'Order not valid',
+                code: responseCodes.INVALID_ORDER
+            })
+        }
+    }catch (e) {
+        return res.status(400).json({
+            message: 'Order not valid',
+            code: responseCodes.INVALID_ORDER
+        })
+    }
 
-//     try {
-//         //If greater than 45000 reject the order
-//         if (ordersTotal > 45000) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: 'Orders should not be more than 9000',
-//                 code: responseCodes.ORDER_REACHED_LIMIT
-//             })
-//         }
+    try {
+        //If greater than 45000 reject the order
+        if (ordersTotal > 45000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Orders should not be more than 9000',
+                code: responseCodes.ORDER_REACHED_LIMIT
+            })
+        }
 
-//         let user;
+        let user;
 
-//         if(!isGuest){
-//             user = await User.findById(userId);
-//             //If user not found return error
-//             if(!user){
-//                 return res.status(404).json({
-//                     success: false,
-//                     message: 'User not found',
-//                     code: responseCodes.USER_NOT_FOUND
-//                 })
-//             }
+        if(!isGuest){
+            user = await User.findById(userId);
+            //If user not found return error
+            if(!user){
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found',
+                    code: responseCodes.USER_NOT_FOUND
+                })
+            }
 
-//             //If user has used max vouchers reject
-//             if(user.vouchersUsed >= 15){
-//                 return res.status(400).json({
-//                     success: false,
-//                     message: 'User has bought max vouchers',
-//                     code: responseCodes.VOUCHER_REACHED_LIMIT
-//                 })
-//             }
+            //If user has used max vouchers reject
+            if(user.vouchersUsed >= 15){
+                return res.status(400).json({
+                    success: false,
+                    message: 'User has bought max vouchers',
+                    code: responseCodes.VOUCHER_REACHED_LIMIT
+                })
+            }
 
-//             const today = moment().endOf('day');
-//             const lastWeek = moment().subtract(7, 'd');
+            const today = moment().endOf('day');
+            const lastWeek = moment().subtract(7, 'd');
 
-//             //Check orders by user in past week and if greater than or equal to two reject
-//             const prevOrders = await Order.countDocuments({
-//                 date: {
-//                     $gte: lastWeek,
-//                     $lte: today
-//                 },
-//                 userId
-//             });
+            //Check orders by user in past week and if greater than or equal to two reject
+            const prevOrders = await Order.countDocuments({
+                date: {
+                    $gte: lastWeek,
+                    $lte: today
+                },
+                userId
+            });
 
-//             if(prevOrders >= 2){
-//                 return res.status(400).json({success: false, code: responseCodes.MAX_ORDERS_FOR_WEEK})
-//             }
-//         }
+            if(prevOrders >= 2){
+                return res.status(400).json({success: false, code: responseCodes.MAX_ORDERS_FOR_WEEK})
+            }
+        }
 
-//         const bars = {};
+        const bars = {};
 
-//         //Select bars that exist and have a valid amount made
-//         await vouchers.reduce(async (prevBar, {barId}) => {
-//             await prevBar;
-//             bars[barId] = await Bar.findOne({_id: barId, amountMade: {$lte: 500000}});
-//         }, Promise.resolve());
+        //Select bars that exist and have a valid amount made
+        await vouchers.reduce(async (prevBar, {barId}) => {
+            await prevBar;
+            bars[barId] = await Bar.findOne({_id: barId, amountMade: {$lte: 500000}});
+        }, Promise.resolve());
 
-//         //Filter the bars that weren't selected
-//         vouchers = vouchers.filter(({barId}) => !!bars[barId]);
-
-
-//         //If no vouchers in the filtered array then the person paid for a totally invalid amount of vouchers
-//         if(vouchers.length === 0){
-//             return res.status(400).json({
-//                 success: false,
-//                 code: responseCodes.BAR_REACHED_LIMIT
-//             })
-//         }
-
-//         const barsToSave = [];
-
-//         let vouchersDb = await Promise.all(
-//             vouchers.map(async voucher => {
-//                 //Increase bar's amount made
-//                 bars[voucher.barId].amountMade += voucher.quantity * voucher.price;
-//                 barsToSave.push(voucher.barId)
-//                 //Get an array of the vouchers separated
-//                 const vouchers = [...Array(voucher.quantity)].map(_ => getVoucherData(voucher, {
-//                     isGuest,
-//                     guestData: userDetails,
-//                     userId
-//                 }));
-//                 //Return created vouchers
-//                 return Voucher.create(vouchers)
-//             })
-//         );
-
-//         await Promise.all(
-//             [...new Set(barsToSave)].map(id => {
-//                 return bars[id].save()
-//             })
-//         )
-
-//         //Flatten array of created vouchers
-//         vouchersDb = vouchersDb.flat(1);
-
-//         const orderObj = {
-//             vouchers: vouchersDb,
-//             total: ordersTotal,
-//             reference
-//         }
-
-//         if(!isGuest){
-//             orderObj.userId = userId
-//         }
-
-//         //Create order
-//         const order = await Order.create(orderObj);
-
-//         //Create transport
-//         const smtpTransport = nodemailer.createTransport({
-//             host: process.env.SMTP_HOST,
-//             port: 465,
-//             secure: true,
-//             auth: {
-//                 user: process.env.SMTP_CONSUMER_USER,
-//                 pass: process.env.SMTP_CONSUMER_PASSWORD
-//             }
-//         });
-
-//         //Get attachments
-//         const attachments = []
-
-//         await order.vouchers.reduce(async (promise, {quantity, price, barId: bar, _id}) => {
-//             await promise
-//             //Get voucher html
-//             const voucherHTML = await getVoucherHTML({
-//                 price: `${price} x ${quantity}`,
-//                 address: bar.address,
-//                 name: bar.barName,
-//                 id: _id
-//             });
-
-//             //Convert voucher html to pdf
-//             const pdf = await htmlToPdf(voucherHTML);
-
-//             attachments.push({
-//                 content: pdf,
-//                 contentType: 'application/pdf',
-//                 contentDisposition: 'attachment',
-//                 fileName: `${bar.barName} * ${quantity}.pdf`
-//             });
-//         }, Promise.resolve())
-
-//         const mailOptions = {
-//             to: isGuest ? guestData.email : user.email,
-//             from: process.env.SMTP_CONSUMER_USER,
-//             subject: "Here's Your Voucher!",
-//             attachments
-//         };
+        //Filter the bars that weren't selected
+        vouchers = vouchers.filter(({barId}) => !!bars[barId]);
 
 
-//         const email = new Email({
-//             juice: true,
-//             juiceResources: {
-//                 preserveImportant: true,
-//                 webResources: {
-//                     relativeTo: path.resolve('emails')
-//                 }
-//             },
-//             transport: smtpTransport,
-//             //Uncomment this line to make it send mails in development
-//             // send: true
-//         });
+        //If no vouchers in the filtered array then the person paid for a totally invalid amount of vouchers
+        if(vouchers.length === 0){
+            return res.status(400).json({
+                success: false,
+                code: responseCodes.BAR_REACHED_LIMIT
+            })
+        }
 
-//         //Get transformed array of vouchers that'll be used in the order mail
-//         const vouchersMail = vouchers.map(({quantity, price, barId}) => (
-//             {
-//                 title: `${bars[barId].barName} x ${quantity}`,
-//                 price,
-//                 image: bars[barId].image
-//             }
-//         ));
+        const barsToSave = [];
 
-//         await email.send({
-//             message: mailOptions,
-//             template: 'order',
-//             locals: {
-//                 orderId: `#${order._id}`.toUpperCase(),
-//                 vouchers: vouchersMail,
-//                 name: isGuest ? guestData.firstname : user.firstname
-//             }
-//         });
+        let vouchersDb = await Promise.all(
+            vouchers.map(async voucher => {
+                //Increase bar's amount made
+                bars[voucher.barId].amountMade += voucher.quantity * voucher.price;
+                barsToSave.push(voucher.barId)
+                //Get an array of the vouchers separated
+                const vouchers = [...Array(voucher.quantity)].map(_ => getVoucherData(voucher, {
+                    isGuest,
+                    guestData: userDetails,
+                    userId
+                }));
+                //Return created vouchers
+                return Voucher.create(vouchers)
+            })
+        );
 
-//         if(!isGuest){
-//             user.vouchersUsed += vouchersDb.length;
-//             await user.save();
-//         }
+        await Promise.all(
+            [...new Set(barsToSave)].map(id => {
+                return bars[id].save()
+            })
+        )
 
-//         res.json({
-//             success: true,
-//             order
-//         })
-//     } catch (err) {
-//         console.log(err);
-//         res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
-//     }
+        //Flatten array of created vouchers
+        vouchersDb = vouchersDb.flat(1);
 
-// });
+        const orderObj = {
+            vouchers: vouchersDb,
+            total: ordersTotal,
+            reference
+        }
+
+        if(!isGuest){
+            orderObj.userId = userId
+        }
+
+        //Create order
+        const order = await Order.create(orderObj);
+
+        //Create transport
+        const smtpTransport = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.SMTP_CONSUMER_USER,
+                pass: process.env.SMTP_CONSUMER_PASSWORD
+            }
+        });
+
+        //Get attachments
+        const attachments = []
+
+        await order.vouchers.reduce(async (promise, {quantity, price, barId: bar, _id}) => {
+            await promise
+            //Get voucher html
+            const voucherHTML = await getVoucherHTML({
+                price: `${price} x ${quantity}`,
+                address: bar.address,
+                name: bar.barName,
+                id: _id
+            });
+
+            //Convert voucher html to pdf
+            const pdf = await htmlToPdf(voucherHTML);
+
+            attachments.push({
+                content: pdf,
+                contentType: 'application/pdf',
+                contentDisposition: 'attachment',
+                fileName: `${bar.barName} * ${quantity}.pdf`
+            });
+        }, Promise.resolve())
+
+        const mailOptions = {
+            to: isGuest ? guestData.email : user.email,
+            from: process.env.SMTP_CONSUMER_USER,
+            subject: "Here's Your Voucher!",
+            attachments
+        };
+
+
+        const email = new Email({
+            juice: true,
+            juiceResources: {
+                preserveImportant: true,
+                webResources: {
+                    relativeTo: path.resolve('emails')
+                }
+            },
+            transport: smtpTransport,
+            //Uncomment this line to make it send mails in development
+            // send: true
+        });
+
+        //Get transformed array of vouchers that'll be used in the order mail
+        const vouchersMail = vouchers.map(({quantity, price, barId}) => (
+            {
+                title: `${bars[barId].barName} x ${quantity}`,
+                price,
+                image: bars[barId].image
+            }
+        ));
+
+        await email.send({
+            message: mailOptions,
+            template: 'order',
+            locals: {
+                orderId: `#${order._id}`.toUpperCase(),
+                vouchers: vouchersMail,
+                name: isGuest ? guestData.firstname : user.firstname
+            }
+        });
+
+        if(!isGuest){
+            user.vouchersUsed += vouchersDb.length;
+            await user.save();
+        }
+
+        res.json({
+            success: true,
+            order
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({success: false, code: responseCodes.SERVER_ERROR});
+    }
+
+});
 
 
 router.route('/use-voucher/:_id')
