@@ -286,7 +286,11 @@ const sendEmail = async order => {
         auth: {
             user: process.env.SMTP_CONSUMER_USER,
             pass: process.env.SMTP_CONSUMER_PASSWORD
-        }
+        },
+        tls: {
+            // do not fail on invalid certs
+            rejectUnauthorized: false
+        },
     });
 
     const attachments = []
